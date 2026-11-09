@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pos 3: Data Online</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .uppercase-input { text-transform: uppercase; }
+        
+        /* Mengunci layar agar body tidak bisa di-scroll */
+        html, body {
+            height: 100vh;
+            overflow: hidden;
+            background-color: #f3f4f6;
+        }
+
+        /* Memperhalus tampilan scrollbar */
+        ::-webkit-scrollbar { height: 6px; width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* Optimasi Tampilan Dropdown Select */
+        select {
+            font-size: 16px !important;
+            cursor: pointer;
+            -webkit-appearance: none; 
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234f46e5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1.2em;
+            padding-right: 2.5rem !important;
+        }
+        
+        select option {
+            font-size: 16px !important;
+            padding: 12px 15px !important;
+            line-height: 2 !important;
+            background-color: #ffffff;
+            color: #1f2937;
+        }
+
+        /* Style khusus saat input/select di-disable */
+        input:disabled, select:disabled {
+            background-color: #f3f4f6 !important;
+            color: #9ca3af !important;
+            cursor: not-allowed !important;
+        }
+    </style>
+</head>
+<body class="font-sans text-gray-800 p-3 md:p-6 flex flex-col h-screen">
+
+    <div class="max-w-6xl w-full mx-auto flex flex-col h-full space-y-4">
+        <!-- HEADER -->
+        <header class="bg-indigo-700 text-white p-3.5 rounded-lg shadow-md flex justify-between items-center shrink-0">
+            <div>
+                <h1 class="text-xl font-bold">Pos 3: Data Online</h1>
+                <p class="text-indigo-200 text-xs mt-0.5">Lengkapi data dapodik dan kependudukan siswa</p>
+            </div>
+            <a href="index.html" class="bg-indigo-500 hover:bg-indigo-600 px-3.5 py-2 rounded text-sm font-semibold transition shadow">Menu Utama</a>
+        </header>
+
+        <!-- KONTEN UTAMA DUA KOLOM -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 flex-grow overflow-hidden pb-2">
+            
+            <!-- PANEL KIRI: PENCARIAN & DAFTAR PENDAFTAR -->
+            <div class="lg:col-span-4 bg-white p-4 rounded-lg shadow-md flex flex-col h-full overflow-hidden">
+                <h2 class="font-bold text-base text-gray-800 border-b pb-2 mb-3">Cari Pendaftar</h2>
+                
+                <div class="flex gap-2 mb-3">
+                    <input type="text" id="cari_no_daftar" class="border border-gray-300 w-full px-3 py-2 text-base rounded focus:ring-2 focus:ring-indigo-500 outline-none uppercase-input transition" placeholder="Nomor Pendaftaran...">
+                    <button onclick="cariDataPendaftar()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2 rounded font-semibold shadow transition text-sm whitespace-nowrap">🔍 Cari</button>
+                </div>
+
+                <div class="bg-indigo-50 text-indigo-800 text-xs p-2.5 rounded border border-indigo-100 mb-3 leading-relaxed shrink-0">
+                    Ketik <strong>Nomor Pendaftaran</strong> (contoh: 27001) lalu klik Cari. Pilih nama dari daftar di bawah.
+                </div>
+
+                <h3 class="font-bold text-xs text-gray-600 mb-1.5 uppercase tracking-wide">Hasil Pencarian / 10 Terakhir:</h3>
+                <div class="overflow-y-auto flex-grow border rounded bg-gray-50 p-2 space-y-2" id="list_pendaftar">
+                    <div class="text-center text-gray-500 text-sm p-4">Memuat data...</div>
+                </div>
+            </div>
+
+            <!-- PANEL KANAN -->
+            <div class="lg:col-span-8 bg-white rounded-lg shadow-md relative h-full flex flex-col overflow-hidden">
+                
+                <!-- State Kosong -->
+                <div id="state_kosong" class="absolute inset-0 bg-white/95 backdrop-blur-sm z-20 flex flex-col items-center justify-center text-center p-8">
+                    <div class="text-5xl mb-3">📄</div>
+                    <h2 class="text-xl font-bold text-gray-700 mb-2">Belum Ada Pendaftar yang Dipilih</h2>
+                    <p class="text-gray-500 text-sm max-w-md">Silakan cari berdasarkan <strong>Nomor Pendaftaran</strong> pada panel di sebelah kiri, lalu klik tombol "Pilih" untuk melengkapi data online.</p>
+                </div>
+
+                <!-- Header Info Pendaftar Terpilih -->
+                <div class="bg-indigo-50 border-l-4 border-indigo-600 p-3.5 m-4 mb-0 rounded flex justify-between items-start shrink-0">
+                    <div>
+                        <h2 class="text-lg font-bold text-indigo-900" id="info_nama_siswa">-</h2>
+                        <div class="text-xs text-indigo-700 font-mono mt-0.5 font-bold">Nomor Pendaftaran: <span id="info_no_daftar">-</span> | NISN: <span id="info_nisn">-</span></div>
+                    </div>
+                    <span class="bg-indigo-200 text-indigo-800 text-[10px] font-bold px-2 py-0.5 rounded uppercase">Sedang Diedit</span>
+                </div>
+
+                <!-- AREA FORMULIR (Bisa di-scroll) -->
+                <div class="flex-grow overflow-y-auto p-4 pt-3">
+                    <form id="formDataOnline" class="space-y-5">
+                        <input type="hidden" id="edit_nisn">
+
+                        <!-- SEGMEN A: DATA KEPENDUDUKAN & FISIK SISWA -->
+                        <div class="border border-gray-200 rounded-lg p-4 bg-white shadow-xs">
+                            <h3 class="font-bold text-base text-gray-800 mb-4 border-b pb-2 text-indigo-900">
+                                A. Data Kependudukan & Fisik Siswa
+                            </h3>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-xs font-bold mb-1 text-gray-700">Nama Lengkap (Dari Pos 1)</label>
+                                    <input type="text" id="nama_ro" class="w-full border border-gray-300 px-3 py-2 rounded-md bg-gray-100 text-gray-600 uppercase-input text-base" readonly>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold mb-1 text-gray-700">1. NIK Murid <span class="text-red-500">*</span></label>
+                                    <input type="text" id="nik_siswa" class="w-full border border-gray-300 px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none transition text-base" placeholder="16 Digit NIK" maxlength="16" required>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-xs font-bold mb-1 text-gray-700">2. Anak ke- <span class="text-red-500">*</span></label>
+                                    <input type="number" id="anak_ke" class="w-full border border-gray-300 px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none transition text-base" placeholder="Cth: 2" required>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold mb-1 text-gray-700">3. Nomor PIP / KIP (Jika Ada)</label>
+                                    <input type="text" id="no_kip" class="w-full border border-gray-300 px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none transition uppercase-input text-base" placeholder="Nomor KIP/PIP">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-xs font-bold mb-1 text-gray-700">4. No Registrasi Akta Kelahiran</label>
+                                    <input type="text" id="no_akta" class="w-full border border-gray-300 px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none transition uppercase-input text-base" placeholder="Nomor Akta">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold mb-1 text-gray-700">5. Golongan Darah</label>
+                                    <select id="gol_darah" class="w-full border border-gray-300 px-3 py-2 rounded-md bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition text-base cursor-pointer">
+                                        <option value="">- Pilih -</option>
+                                        <option value="A">A</option>
+                                        <option value="B">B</option>
+                                        <option value="AB">AB</option>
+                                        <option value="O">O</option>
+                                        <option value="Belum Tahu">Belum Tahu</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-xs font-bold mb-1 text-gray-700">6. Tinggi Badan (cm) <span class="text-red-500">*</span></label>
+                                    <input type="number" id="tinggi_badan" class="w-full border border-gray-300 px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none transition text-base" placeholder="Cth: 165" required>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold mb-1 text-gray-700">7. Berat Badan (kg) <span class="text-red-500">*</span></label>
+                                    <input type="number" id="berat_badan" class="w-full border border-gray-300 px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none transition text-base" placeholder="Cth: 55" required>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-xs font-bold mb-1 text-gray-700">8. Lingkar Kepala (cm) <span class="text-red-500">*</span></label>
+                                    <input type="number" id="lingkar_kepala" class="w-full border border-gray-300 px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none transition text-base" placeholder="Cth: 56" required>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold mb-1 text-gray-700">9. Waktu dari Rumah ke Sekolah (menit)</label>
+                                    <input type="number" id="waktu_tempuh" class="w-full border border-gray-300 px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none transition text-base" placeholder="Cth: 30">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-xs font-bold mb-1 text-gray-700">10. Jenis Tinggal</label>
+                                    <select id="jenis_tinggal" class="w-full border border-gray-300 px-3 py-2 rounded-md bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition text-base cursor-pointer">
+                                        <option value="Bersama Orang Tua">Bersama Orang Tua</option>
+                                        <option value="Wali">Wali</option>
+                                        <option value="Kost">Kost</option>
+                                        <option value="Asrama">Asrama</option>
+                                        <option value="Panti Asuhan">Panti Asuhan</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold mb-1 text-gray-700">11. Transportasi ke Sekolah</label>
+                                    <select id="transportasi" class="w-full border border-gray-300 px-3 py-2 rounded-md bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition text-base cursor-pointer">
+                                        <option value="Sepeda Motor">Sepeda Motor</option>
+                                        <option value="Jalan Kaki">Jalan Kaki</option>
+                                        <option value="Kendaraan Umum">Kendaraan Umum / Angkot</option>
+                                        <option value="Sepeda">Sepeda</option>
+                                        <option value="Antar Jemput">Antar Jemput</option>
+                                        <option value="Kereta Api">Kereta Api</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold mb-1 text-gray-700">12. Jumlah Saudara Kandung</label>
+                                    <input type="number" id="jml_saudara" class="w-full border border-gray-300 px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none transition text-base" placeholder="0">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold mb-1 text-gray-700">13. Penyakit Bawaan / Riwayat Kesehatan</label>
+                                    <input type="text" id="penyakit" class="w-full border border-gray-300 px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none transition uppercase-input text-base" placeholder="TIDAK ADA / TULISKAN JIKA ADA">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SEGMEN B: DATA ORANG TUA -->
+                        <div class="border border-gray-200 rounded-lg p-4 bg-white shadow-xs">
+                            <h3 class="font-bold text-base text-gray-800 mb-4 border-b pb-2 text-indigo-900">
+                                B. Data Orang Tua
+                            </h3>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Data Ayah -->
+                                <div class="border border-gray-200 bg-gray-50 p-3.5 rounded-lg">
+                                    <h4 class="font-bold text-sm text-indigo-800 mb-3 border-b border-indigo-200 pb-1.5">Data Ayah</h4>
+                                    
+                                    <div class="mb-3">
+                                        <label class="block text-[11px] font-bold mb-1 text-gray-500 uppercase">Nama Ayah (Dari Pos 1)</label>
+                                        <input type="text" id="nama_ayah_ro" class="w-full border border-gray-300 px-3 py-2 rounded bg-gray-100 text-gray-600 uppercase-input text-base" readonly>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="block text-[11px] font-bold mb-1 text-gray-700 uppercase">NIK Ayah <span class="text-red-500">*</span></label>
+                                        <input type="text" id="nik_ayah" class="w-full border border-gray-300 px-3 py-2 rounded focus:ring-2 focus:ring-indigo-500 outline-none transition text-base" placeholder="16 Digit NIK Ayah" maxlength="16" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="block text-[11px] font-bold mb-1 text-gray-700 uppercase">Pekerjaan Ayah</label>
+                                        <input type="text" id="pekerjaan_ayah" class="w-full border border-gray-300 px-3 py-2 rounded focus:ring-2 focus:ring-indigo-500 outline-none transition uppercase-input text-base" placeholder="PEKERJAAN AYAH">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="block text-[11px] font-bold mb-1 text-gray-700 uppercase">Penghasilan Ayah</label>
+                                        <select id="penghasilan_ayah" class="w-full border border-gray-300 px-3 py-2 rounded bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition text-base cursor-pointer">
+                                            <option value="">- Pilih Penghasilan -</option>
+                                            <option value="Kurang dari Rp 1.000.000">Kurang dari Rp 1.000.000</option>
+                                            <option value="Rp 1.000.000 - Rp 2.000.000">Rp 1.000.000 - Rp 2.000.000</option>
+                                            <option value="Rp 2.000.000 - Rp 5.000.000">Rp 2.000.000 - Rp 5.000.000</option>
+                                            <option value="Lebih dari Rp 5.000.000">Lebih dari Rp 5.000.000</option>
+                                            <option value="Tidak Berpenghasilan">Tidak Berpenghasilan</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="block text-[11px] font-bold mb-1 text-gray-700 uppercase">Tahun Lahir Ayah</label>
+                                        <input type="number" id="thn_lahir_ayah" class="w-full border border-gray-300 px-3 py-2 rounded focus:ring-2 focus:ring-indigo-500 outline-none transition text-base" placeholder="Cth: 1975" min="1900" max="2010">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-bold mb-1 text-gray-700 uppercase">Pendidikan Ayah</label>
+                                        <select id="pendidikan_ayah" class="w-full border border-gray-300 px-3 py-2 rounded bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition text-base cursor-pointer">
+                                            <option value="">- Pilih Pendidikan -</option>
+                                            <option value="SD/Sederajat">SD/Sederajat</option>
+                                            <option value="SMP/Sederajat">SMP/Sederajat</option>
+                                            <option value="SMA/SMK/Sederajat">SMA/SMK/Sederajat</option>
+                                            <option value="D1/D2/D3">D1/D2/D3</option>
+                                            <option value="S1/D4">S1/D4</option>
+                                            <option value="S2/S3">S2/S3</option>
+                                            <option value="Tidak Sekolah">Tidak Sekolah</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Data Ibu -->
+                                <div class="border border-gray-200 bg-gray-50 p-3.5 rounded-lg">
+                                    <h4 class="font-bold text-sm text-pink-800 mb-3 border-b border-pink-200 pb-1.5">Data Ibu</h4>
+                                    
+                                    <div class="mb-3">
+                                        <label class="block text-[11px] font-bold mb-1 text-gray-500 uppercase">Nama Ibu (Dari Pos 1)</label>
+                                        <input type="text" id="nama_ibu_ro" class="w-full border border-gray-300 px-3 py-2 rounded bg-gray-100 text-gray-600 uppercase-input text-base" readonly>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="block text-[11px] font-bold mb-1 text-gray-700 uppercase">NIK Ibu <span class="text-red-500">*</span></label>
+                                        <input type="text" id="nik_ibu" class="w-full border border-gray-300 px-3 py-2 rounded focus:ring-2 focus:ring-indigo-500 outline-none transition text-base" placeholder="16 Digit NIK Ibu" maxlength="16" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="block text-[11px] font-bold mb-1 text-gray-700 uppercase">Pekerjaan Ibu</label>
+                                        <input type="text" id="pekerjaan_ibu" class="w-full border border-gray-300 px-3 py-2 rounded focus:ring-2 focus:ring-indigo-500 outline-none transition uppercase-input text-base" placeholder="PEKERJAAN IBU">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="block text-[11px] font-bold mb-1 text-gray-700 uppercase">Penghasilan Ibu</label>
+                                        <select id="penghasilan_ibu" class="w-full border border-gray-300 px-3 py-2 rounded bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition text-base cursor-pointer">
+                                            <option value="">- Pilih Penghasilan -</option>
+                                            <option value="Kurang dari Rp 1.000.000">Kurang dari Rp 1.000.000</option>
+                                            <option value="Rp 1.000.000 - Rp 2.000.000">Rp 1.000.000 - Rp 2.000.000</option>
+                                            <option value="Rp 2.000.000 - Rp 5.000.000">Rp 2.000.000 - Rp 5.000.000</option>
+                                            <option value="Lebih dari Rp 5.000.000">Lebih dari Rp 5.000.000</option>
+                                            <option value="Tidak Berpenghasilan">Tidak Berpenghasilan</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="block text-[11px] font-bold mb-1 text-gray-700 uppercase">Tahun Lahir Ibu</label>
+                                        <input type="number" id="thn_lahir_ibu" class="w-full border border-gray-300 px-3 py-2 rounded focus:ring-2 focus:ring-indigo-500 outline-none transition text-base" placeholder="Cth: 1980" min="1900" max="2010">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-bold mb-1 text-gray-700 uppercase">Pendidikan Ibu</label>
+                                        <select id="pendidikan_ibu" class="w-full border border-gray-300 px-3 py-2 rounded bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition text-base cursor-pointer">
+                                            <option value="">- Pilih Pendidikan -</option>
+                                            <option value="SD/Sederajat">SD/Sederajat</option>
+                                            <option value="SMP/Sederajat">SMP/Sederajat</option>
+                                            <option value="SMA/SMK/Sederajat">SMA/SMK/Sederajat</option>
+                                            <option value="D1/D2/D3">D1/D2/D3</option>
+                                            <option value="S1/D4">S1/D4</option>
+                                            <option value="S2/S3">S2/S3</option>
+                                            <option value="Tidak Sekolah">Tidak Sekolah</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SEGMEN C: DATA WALI (Opsional) -->
+                        <div class="border border-gray-200 rounded-lg p-4 bg-white shadow-xs">
+                            <h3 class="font-bold text-base text-gray-800 mb-4 border-b pb-2 text-indigo-900">
+                                C. Data Wali (Opsional)
+                            </h3>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-xs font-bold mb-1 text-gray-700">Nama Wali (Dari Pos 1)</label>
+                                    <input type="text" id="nama_wali_ro" class="w-full border border-gray-300 px-3 py-2 rounded bg-gray-100 text-gray-600 uppercase-input text-base" readonly placeholder="-">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold mb-1 text-gray-700">NIK Wali</label>
+                                    <input type="text" id="nik_wali" class="w-full border border-gray-300 px-3 py-2 rounded focus:ring-2 focus:ring-indigo-500 outline-none transition text-base wali-field" placeholder="16 Digit NIK Wali" maxlength="16" disabled>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-xs font-bold mb-1 text-gray-700">Tahun Lahir Wali</label>
+                                    <input type="number" id="thn_lahir_wali" class="w-full border border-gray-300 px-3 py-2 rounded focus:ring-2 focus:ring-indigo-500 outline-none transition text-base wali-field" placeholder="Cth: 1970" min="1900" max="2010" disabled>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold mb-1 text-gray-700">Pendidikan Wali</label>
+                                    <select id="pendidikan_wali" class="w-full border border-gray-300 px-3 py-2 rounded bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition text-base cursor-pointer wali-field" disabled>
+                                        <option value="">- Pilih Pendidikan -</option>
+                                        <option value="SD/Sederajat">SD/Sederajat</option>
+                                        <option value="SMP/Sederajat">SMP/Sederajat</option>
+                                        <option value="SMA/SMK/Sederajat">SMA/SMK/Sederajat</option>
+                                        <option value="D1/D2/D3">D1/D2/D3</option>
+                                        <option value="S1/D4">S1/D4</option>
+                                        <option value="S2/S3">S2/S3</option>
+                                        <option value="Tidak Sekolah">Tidak Sekolah</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold mb-1 text-gray-700">Alamat Wali</label>
+                                <input type="text" id="alamat_wali" class="w-full border border-gray-300 px-3 py-2 rounded focus:ring-2 focus:ring-indigo-500 outline-none transition uppercase-input text-base wali-field" placeholder="ALAMAT LENGKAP TEMPAT TINGGAL WALI" disabled>
+                            </div>
+                        </div>
+
+                        <div class="pt-2 pb-2">
+                            <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 shadow-lg text-base flex justify-center items-center gap-2 transition">
+                                <span>💾</span> Simpan Data Online
+                            </button>
+                            <button type="button" onclick="batalEdit()" class="w-full mt-2 bg-gray-200 text-gray-700 font-semibold py-2.5 rounded-lg hover:bg-gray-300 transition text-sm">Batal / Tutup Pendaftar Ini</button>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://ldkybpknxwtmgttwezbl.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_TM3B4XBbktJS_oGPRYYIgQ_x64yMCfG';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Auto Uppercase
+        document.querySelectorAll('.uppercase-input').forEach(input => {
+            input.addEventListener('input', function() { this.value = this.value.toUpperCase(); });
+        });
+
+        // Tampilkan State Kosong di awal
+        document.getElementById('state_kosong').style.display = 'flex';
+
+        // PENCARIAN BERDASARKAN NOMOR PENDAFTARAN
+        async function cariDataPendaftar() {
+            const noDaftarCari = document.getElementById('cari_no_daftar').value.trim();
+            const listContainer = document.getElementById('list_pendaftar');
+            
+            listContainer.innerHTML = '<div class="text-center text-gray-500 p-4">Mencari data...</div>';
+
+            let query = supabaseClient.from('pendaftar').select('nisn, no_pendaftaran, nama, asal_sekolah');
+            
+            if (noDaftarCari) {
+                query = query.ilike('no_pendaftaran', `%${noDaftarCari}%`);
+            } else {
+                query = query.order('created_at', { ascending: false }).limit(10);
+            }
+
+            const { data, error } = await query;
+
+            listContainer.innerHTML = '';
+            
+            if (error || !data || data.length === 0) {
+                listContainer.innerHTML = '<div class="text-center text-red-500 text-sm p-4 font-semibold">Pendaftar dengan Nomor Pendaftaran tersebut tidak ditemukan.</div>';
+                return;
+            }
+
+            data.forEach(pendaftar => {
+                const item = document.createElement('div');
+                item.className = "bg-white p-2.5 rounded-lg border border-gray-200 shadow-xs hover:border-indigo-400 transition flex justify-between items-center gap-2 cursor-pointer";
+                item.onclick = () => pilihPendaftar(pendaftar.nisn);
+                item.innerHTML = `
+                    <div class="overflow-hidden">
+                        <div class="font-bold text-gray-800 text-xs truncate">${pendaftar.nama}</div>
+                        <div class="text-[11px] text-indigo-600 font-mono font-semibold">No. Daftar: ${pendaftar.no_pendaftaran || '-'}</div>
+                        <div class="text-[10px] text-gray-500 truncate">${pendaftar.asal_sekolah || 'Asal Sekolah Kosong'}</div>
+                    </div>
+                    <button class="bg-indigo-100 hover:bg-indigo-600 hover:text-white text-indigo-700 px-2.5 py-1.5 rounded text-[11px] font-bold transition whitespace-nowrap border border-indigo-200 pointer-events-none">
+                        Pilih
+                    </button>
+                `;
+                listContainer.appendChild(item);
+            });
+        }
+
+        // ATUR KONDISI INPUT WALI (DISABLE JIKA TIDAK ADA NAMA WALI)
+        function aturStatusWali(namaWali) {
+            const fieldsWali = document.querySelectorAll('.wali-field');
+            const adaWali = namaWali && namaWali.trim() !== '' && namaWali.trim() !== '-';
+
+            fieldsWali.forEach(field => {
+                field.disabled = !adaWali;
+                if (!adaWali) {
+                    field.value = ''; // Kosongkan nilainya jika di-disable
+                }
+            });
+        }
+
+        // AMBIL DATA LENGKAP SAAT DIPILIH
+        async function pilihPendaftar(nisn) {
+            const { data, error } = await supabaseClient.from('pendaftar').select('*').eq('nisn', nisn).maybeSingle();
+            
+            if (error || !data) {
+                alert("Gagal mengambil detail pendaftar.");
+                return;
+            }
+
+            // Buka Panel Kanan
+            document.getElementById('state_kosong').style.display = 'none';
+
+            // Set Info Header
+            document.getElementById('info_nama_siswa').innerText = data.nama || '-';
+            document.getElementById('info_no_daftar').innerText = data.no_pendaftaran || 'Belum Ada';
+            document.getElementById('info_nisn').innerText = data.nisn || '-';
+            
+            // Set Hidden Input 
+            document.getElementById('edit_nisn').value = data.nisn;
+
+            // --- A. Kependudukan & Fisik Siswa ---
+            document.getElementById('nama_ro').value = data.nama || '';
+            document.getElementById('nik_siswa').value = data.nik_siswa || '';
+            document.getElementById('anak_ke').value = data.anak_ke || '';
+            document.getElementById('no_kip').value = data.no_kip || '';
+            document.getElementById('no_akta').value = data.no_akta || '';
+            document.getElementById('gol_darah').value = data.gol_darah || '';
+            document.getElementById('tinggi_badan').value = data.tinggi_badan || '';
+            document.getElementById('berat_badan').value = data.berat_badan || '';
+            document.getElementById('lingkar_kepala').value = data.lingkar_kepala || '';
+            document.getElementById('waktu_tempuh').value = data.waktu_tempuh || '';
+            document.getElementById('jenis_tinggal').value = data.jenis_tinggal || 'Bersama Orang Tua';
+            document.getElementById('transportasi').value = data.transportasi || 'Sepeda Motor';
+            document.getElementById('jml_saudara').value = data.jml_saudara || '';
+            document.getElementById('penyakit').value = data.penyakit || '';
+
+            // --- B. Data Orang Tua ---
+            document.getElementById('nama_ayah_ro').value = data.nama_ayah || '';
+            document.getElementById('nik_ayah').value = data.nik_ayah || '';
+            document.getElementById('pekerjaan_ayah').value = data.pekerjaan_ayah || '';
+            document.getElementById('penghasilan_ayah').value = data.penghasilan_ayah || '';
+            document.getElementById('thn_lahir_ayah').value = data.thn_lahir_ayah || '';
+            document.getElementById('pendidikan_ayah').value = data.pendidikan_ayah || '';
+
+            document.getElementById('nama_ibu_ro').value = data.nama_ibu || '';
+            document.getElementById('nik_ibu').value = data.nik_ibu || '';
+            document.getElementById('pekerjaan_ibu').value = data.pekerjaan_ibu || '';
+            document.getElementById('penghasilan_ibu').value = data.penghasilan_ibu || '';
+            document.getElementById('thn_lahir_ibu').value = data.thn_lahir_ibu || '';
+            document.getElementById('pendidikan_ibu').value = data.pendidikan_ibu || '';
+
+            // --- C. Data Wali ---
+            const namaWaliVal = data.nama_wali || '';
+            document.getElementById('nama_wali_ro').value = namaWaliVal || '-';
+            
+            // Jalankan fungsi penguncian otomatis berdasarkan ada/tidaknya nama wali
+            aturStatusWali(namaWaliVal);
+
+            if (namaWaliVal && namaWaliVal.trim() !== '' && namaWaliVal.trim() !== '-') {
+                document.getElementById('nik_wali').value = data.nik_wali || '';
+                document.getElementById('thn_lahir_wali').value = data.thn_lahir_wali || '';
+                document.getElementById('pendidikan_wali').value = data.pendidikan_wali || '';
+                document.getElementById('alamat_wali').value = data.alamat_wali || '';
+            }
+        }
+
+        function batalEdit() {
+            document.getElementById('state_kosong').style.display = 'flex';
+            document.getElementById('formDataOnline').reset();
+            aturStatusWali(''); // Kunci kembali form wali
+        }
+
+        // SIMPAN PERUBAHAN KE SUPABASE
+        document.getElementById('formDataOnline').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const nisn_target = document.getElementById('edit_nisn').value;
+            if(!nisn_target) {
+                alert("Kesalahan Sistem: NISN target tidak ditemukan!"); return;
+            }
+
+            const namaWaliRo = document.getElementById('nama_wali_ro').value;
+            const adaWali = namaWaliRo && namaWaliRo.trim() !== '' && namaWaliRo.trim() !== '-';
+
+            const payloadUpdate = {
+                // A
+                nik_siswa: document.getElementById('nik_siswa').value,
+                anak_ke: document.getElementById('anak_ke').value,
+                no_kip: document.getElementById('no_kip').value,
+                no_akta: document.getElementById('no_akta').value,
+                gol_darah: document.getElementById('gol_darah').value,
+                tinggi_badan: document.getElementById('tinggi_badan').value,
+                berat_badan: document.getElementById('berat_badan').value,
+                lingkar_kepala: document.getElementById('lingkar_kepala').value,
+                waktu_tempuh: document.getElementById('waktu_tempuh').value,
+                jenis_tinggal: document.getElementById('jenis_tinggal').value,
+                transportasi: document.getElementById('transportasi').value,
+                jml_saudara: document.getElementById('jml_saudara').value,
+                penyakit: document.getElementById('penyakit').value,
+                
+                // B Ayah
+                nik_ayah: document.getElementById('nik_ayah').value,
+                pekerjaan_ayah: document.getElementById('pekerjaan_ayah').value,
+                penghasilan_ayah: document.getElementById('penghasilan_ayah').value,
+                thn_lahir_ayah: document.getElementById('thn_lahir_ayah').value,
+                pendidikan_ayah: document.getElementById('pendidikan_ayah').value,
+
+                // B Ibu
+                nik_ibu: document.getElementById('nik_ibu').value,
+                pekerjaan_ibu: document.getElementById('pekerjaan_ibu').value,
+                penghasilan_ibu: document.getElementById('penghasilan_ibu').value,
+                thn_lahir_ibu: document.getElementById('thn_lahir_ibu').value,
+                pendidikan_ibu: document.getElementById('pendidikan_ibu').value,
+
+                // C Wali (Jika tidak ada wali, kosongkan datanya di database)
+                nik_wali: adaWali ? document.getElementById('nik_wali').value : null,
+                thn_lahir_wali: adaWali ? document.getElementById('thn_lahir_wali').value : null,
+                pendidikan_wali: adaWali ? document.getElementById('pendidikan_wali').value : null,
+                alamat_wali: adaWali ? document.getElementById('alamat_wali').value : null
+            };
+
+            const { error } = await supabaseClient
+                .from('pendaftar')
+                .update(payloadUpdate)
+                .eq('nisn', nisn_target);
+
+            if(error) { 
+                alert("Gagal memperbarui Data Online: " + error.message); 
+                console.error(error); 
+                return; 
+            }
+
+            alert("Data Online untuk " + document.getElementById('info_nama_siswa').innerText + " Berhasil Disimpan!");
+            
+            cariDataPendaftar(); 
+            batalEdit();
+        });
+
+        // Muat 10 pendaftar terakhir saat halaman dibuka
+        window.onload = function() { cariDataPendaftar(); };
+    </script>
+</body>
+</html>

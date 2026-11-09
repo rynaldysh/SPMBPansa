@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pos 4: Verifikasi & Kontrol Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .uppercase-input { text-transform: uppercase; }
+        ::-webkit-scrollbar { height: 8px; width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        select {
+            font-size: 14px !important;
+            cursor: pointer;
+            -webkit-appearance: none; 
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234f46e5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1em;
+            padding-right: 2rem !important;
+        }
+        select option {
+            font-size: 14px !important;
+            padding: 8px;
+            background-color: #ffffff;
+            color: #1f2937;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen text-gray-800 font-sans p-4 md:p-6">
+
+    <div class="max-w-full mx-auto space-y-6">
+        <!-- HEADER -->
+        <header class="bg-red-700 text-white p-4 rounded-lg shadow-md flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold">Pos 4: Verifikasi & Kontrol Admin</h1>
+                <p class="text-red-200 text-sm mt-1">Kelola status berkas, atribut, dan validasi akhir pendaftar</p>
+            </div>
+            <a href="index.html" class="bg-red-600 hover:bg-red-800 px-4 py-2 rounded text-sm font-semibold transition shadow border border-red-500">Menu Utama</a>
+        </header>
+
+        <!-- KONTROL & FILTER -->
+        <div class="bg-white p-4 rounded-lg shadow-md flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <label class="font-bold text-sm text-gray-700">Filter Tampilan:</label>
+                <select id="filter_jurusan" onchange="muatDataVerifikasi()" class="border border-gray-300 px-3 py-2 rounded-md text-sm outline-none focus:ring-2 focus:ring-red-500">
+                    <option value="">Tampilkan Semua Pendaftar</option>
+                    <option value="Teknik Mesin (TM)">Teknik Mesin (TM)</option>
+                    <option value="Teknik Kendaraan Ringan (TKR)">Teknik Kendaraan Ringan (TKR)</option>
+                    <option value="Teknik Sepeda Motor (TSM)">Teknik Sepeda Motor (TSM)</option>
+                    <option value="Layanan Kesehatan (Lkes)">Layanan Kesehatan (Lkes)</option>
+                </select>
+            </div>
+            <button onclick="muatDataVerifikasi()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm font-semibold transition border border-gray-300 flex items-center gap-2">
+                🔄 Refresh Data
+            </button>
+        </div>
+
+        <!-- TABEL VERIFIKASI -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="bg-gray-800 text-white uppercase text-xs tracking-wider">
+                            <th class="p-3 border-b">Nama / No. Pendaftar</th>
+                            <th class="p-3 border-b">Jurusan</th>
+                            <th class="p-3 border-b">Kode Voucher</th>
+                            <th class="p-3 border-b text-center">SKL / Ijazah</th>
+                            <th class="p-3 border-b text-center">Akte Kelahiran</th>
+                            <th class="p-3 border-b text-center">PIP / KIP</th>
+                            <th class="p-3 border-b text-center">Baju</th>
+                            <th class="p-3 border-b text-center">Celana</th>
+                            <th class="p-3 border-b text-center">Status Aksi</th>
+                            <th class="p-3 border-b">Keterangan</th>
+                            <th class="p-3 border-b text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabel_pendaftar" class="divide-y divide-gray-200">
+                        <tr>
+                            <td colspan="11" class="text-center p-6 text-gray-500">Memuat data verifikasi...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="text-xs text-gray-500 italic">* Catatan: Klik tombol Simpan pada masing-masing baris untuk memperbarui data pendaftar secara instan ke database.</div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://ldkybpknxwtmgttwezbl.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_TM3B4XBbktJS_oGPRYYIgQ_x64yMCfG';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function muatDataVerifikasi() {
+            const jurusanFilter = document.getElementById('filter_jurusan').value;
+            const tbody = document.getElementById('tabel_pendaftar');
+            tbody.innerHTML = `<tr><td colspan="11" class="text-center p-6 text-gray-500">Memuat data...</td></tr>`;
+
+            let query = supabaseClient.from('pendaftar').select('*').order('created_at', { ascending: false });
+            if (jurusanFilter) {
+                query = query.eq('jurusan', jurusanFilter);
+            }
+
+            const { data, error } = await query;
+
+            if (error) {
+                tbody.innerHTML = `<tr><td colspan="11" class="text-center p-6 text-red-500 font-semibold">Gagal memuat data: ${error.message}</td></tr>`;
+                return;
+            }
+
+            if (!data || data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="11" class="text-center p-6 text-gray-500">Tidak ada data pendaftar ditemukan.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = '';
+            data.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-50 transition";
+                tr.innerHTML = `
+                    <td class="p-3">
+                        <div class="font-bold text-gray-900">${p.nama || '-'}</div>
+                        <div class="text-xs text-indigo-600 font-mono font-semibold">No. Daftar: ${p.no_pendaftaran || '-'}</div>
+                    </td>
+                    <td class="p-3 text-xs text-gray-700">${p.jurusan || '-'}</td>
+                    
+                    <!-- KODE VOUCHER & TOMBOL HAPUS/GENERATE -->
+                    <td class="p-3">
+                        <div class="flex gap-1 items-center">
+                            <input type="text" id="voucher_${p.nisn}" value="${p.kode_voucher || ''}" placeholder="TANPA REFERRAL" class="border border-gray-300 px-2 py-1 rounded text-xs w-32 uppercase-input" ${!p.nama_pembawa ? 'disabled bg-gray-100' : ''}>
+                            ${p.nama_pembawa ? `
+                                <button onclick="generateVoucher('${p.nisn}')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-2 py-1 rounded text-[10px] font-bold" title="Generate Voucher">Gen</button>
+                                <button onclick="hapusVoucher('${p.nisn}')" class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-[10px] font-bold" title="Hapus Voucher">Hapus</button>
+                            ` : ''}
+                        </div>
+                    </td>
+
+                    <!-- SKL/IJAZAH -->
+                    <td class="p-3 text-center">
+                        <select id="skl_${p.nisn}" class="border border-gray-300 px-2 py-1 rounded text-xs bg-white">
+                            <option value="BELUM" ${p.skl === 'BELUM' ? 'selected' : ''}>BELUM</option>
+                            <option value="ASLI" ${p.skl === 'ASLI' ? 'selected' : ''}>ASLI</option>
+                            <option value="FC" ${p.skl === 'FC' ? 'selected' : ''}>FC</option>
+                        </select>
+                    </td>
+
+                    <!-- AKTE -->
+                    <td class="p-3 text-center">
+                        <select id="akte_${p.nisn}" class="border border-gray-300 px-2 py-1 rounded text-xs bg-white">
+                            <option value="BELUM" ${p.akte === 'BELUM' ? 'selected' : ''}>BELUM</option>
+                            <option value="ASLI" ${p.akte === 'ASLI' ? 'selected' : ''}>ASLI</option>
+                            <option value="FC" ${p.akte === 'FC' ? 'selected' : ''}>FC</option>
+                        </select>
+                    </td>
+
+                    <!-- PIP/KIP -->
+                    <td class="p-3 text-center">
+                        <select id="pip_${p.nisn}" class="border border-gray-300 px-2 py-1 rounded text-xs bg-white">
+                            <option value="TIDAK" ${p.pip === 'TIDAK' ? 'selected' : ''}>TIDAK</option>
+                            <option value="ADA" ${p.pip === 'ADA' ? 'selected' : ''}>ADA</option>
+                        </select>
+                    </td>
+
+                    <!-- BAJU -->
+                    <td class="p-3 text-center">
+                        <select id="baju_${p.nisn}" class="border border-gray-300 px-2 py-1 rounded text-xs bg-white">
+                            <option value="BELUM" ${p.baju === 'BELUM' ? 'selected' : ''}>BELUM</option>
+                            <option value="SUDAH" ${p.baju === 'SUDAH' ? 'selected' : ''}>SUDAH</option>
+                        </select>
+                    </td>
+
+                    <!-- CELANA -->
+                    <td class="p-3 text-center">
+                        <select id="celana_${p.nisn}" class="border border-gray-300 px-2 py-1 rounded text-xs bg-white">
+                            <option value="BELUM" ${p.celana === 'BELUM' ? 'selected' : ''}>BELUM</option>
+                            <option value="SUDAH" ${p.celana === 'SUDAH' ? 'selected' : ''}>SUDAH</option>
+                        </select>
+                    </td>
+
+                    <!-- AKSI (STATUS PENERIMAAN) -->
+                    <td class="p-3 text-center">
+                        <select id="aksi_${p.nisn}" class="border border-gray-300 px-2 py-1 rounded text-xs font-bold ${p.aksi === 'DITERIMA' ? 'text-green-600 bg-green-50' : 'text-orange-600 bg-orange-50'}">
+                            <option value="BELUM DITERIMA" ${p.aksi === 'BELUM DITERIMA' ? 'selected' : ''}>BELUM</option>
+                            <option value="DITERIMA" ${p.aksi === 'DITERIMA' ? 'selected' : ''}>DITERIMA</option>
+                        </select>
+                    </td>
+
+                    <!-- KETERANGAN -->
+                    <td class="p-3">
+                        <input type="text" id="keterangan_${p.nisn}" value="${p.keterangan || ''}" placeholder="Catatan..." class="border border-gray-300 px-2 py-1 rounded text-xs w-full uppercase-input">
+                    </td>
+
+                    <!-- TOMBOL SIMPAN BARIS -->
+                    <td class="p-3 text-center">
+                        <button onclick="simpanBaris('${p.nisn}')" class="bg-gray-800 hover:bg-gray-900 text-white px-3 py-1.5 rounded text-xs font-bold shadow transition">
+                            Simpan
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function generateVoucher(nisn) {
+            const randNum = Math.floor(100 + Math.random() * 900);
+            const kode = `VCR-${randNum}`;
+            document.getElementById(`voucher_${nisn}`).value = kode;
+        }
+
+        function hapusVoucher(nisn) {
+            document.getElementById(`voucher_${nisn}`).value = '';
+        }
+
+        async function simpanBaris(nisn) {
+            const kodeVoucher = document.getElementById(`voucher_${nisn}`).value.trim();
+            const skl = document.getElementById(`skl_${nisn}`).value;
+            const akte = document.getElementById(`akte_${nisn}`).value;
+            const pip = document.getElementById(`pip_${nisn}`).value;
+            const baju = document.getElementById(`baju_${nisn}`).value;
+            const celana = document.getElementById(`celana_${nisn}`).value;
+            const aksi = document.getElementById(`aksi_${nisn}`).value;
+            const keterangan = document.getElementById(`keterangan_${nisn}`).value.trim();
+
+            const { error } = await supabaseClient
+                .from('pendaftar')
+                .update({
+                    kode_voucher: kodeVoucher || null,
+                    skl: skl,
+                    akte: akte,
+                    pip: pip,
+                    baju: baju,
+                    celana: celana,
+                    aksi: aksi,
+                    keterangan: keterangan
+                })
+                .eq('nisn', nisn);
+
+            if (error) {
+                alert("Gagal menyimpan data: " + error.message);
+                console.error(error);
+                return;
+            }
+
+            alert("Data verifikasi berhasil disimpan!");
+            muatDataVerifikasi();
+        }
+
+        window.onload = function() {
+            muatDataVerifikasi();
+        };
+    </script>
+</body>
+</html>
