@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rekapitulasi Data & Cek Voucher - SPMB</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .uppercase-input { text-transform: uppercase; }
+        ::-webkit-scrollbar { height: 8px; width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        select {
+            font-size: 14px !important;
+            cursor: pointer;
+            -webkit-appearance: none; 
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234f46e5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1em;
+            padding-right: 2rem !important;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 min-h-screen text-gray-100 font-sans p-4 md:p-6">
+
+    <div class="max-w-7xl mx-auto space-y-6">
+        <!-- HEADER PRIVASI -->
+        <header class="bg-gray-800 border border-gray-700 text-white p-5 rounded-xl shadow-lg flex flex-wrap justify-between items-center gap-4">
+            <div>
+                <div class="flex items-center gap-2">
+                    <span class="bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded uppercase tracking-wider">🔒 Akses Rahasia</span>
+                    <h1 class="text-xl md:text-2xl font-bold">Panel Rekapitulasi & Kontrol Voucher</h1>
+                </div>
+                <p class="text-gray-400 text-xs mt-1">Halaman privat untuk pencarian voucher dan pemantauan penukaran.</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="admin_dashboard.html" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition border border-gray-600">
+                    ← Kembali ke Dashboard
+                </a>
+                <button onclick="downloadCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow flex items-center gap-2">
+                    📥 Download CSV
+                </button>
+                <button onclick="muatDataPrivasi()" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition border border-gray-600">
+                    🔄 Refresh
+                </button>
+            </div>
+        </header>
+
+        <!-- FILTER & PENCARIAN -->
+        <div class="bg-gray-800 border border-gray-700 p-4 rounded-xl shadow-md flex flex-wrap justify-between items-center gap-4">
+            <div class="flex flex-wrap items-center gap-3 w-full md:w-auto flex-grow">
+                <div class="w-full md:w-72">
+                    <input type="text" id="cari_keyword" oninput="muatDataPrivasi()" placeholder="Cari nama / no pendaftaran..." class="w-full bg-gray-900 border border-gray-700 text-white px-3 py-2 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none uppercase-input">
+                </div>
+                <div class="w-full md:w-64">
+                    <input type="text" id="cari_voucher" oninput="muatDataPrivasi()" placeholder="🔍 Cari Kode Voucher..." class="w-full bg-gray-900 border border-yellow-600/60 text-yellow-300 px-3 py-2 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 outline-none uppercase-input font-mono">
+                </div>
+                <select id="filter_jurusan" onchange="muatDataPrivasi()" class="bg-gray-900 border border-gray-700 text-white px-3 py-2 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="">Semua Jurusan</option>
+                    <option value="Teknik Mesin (TM)">Teknik Mesin (TM)</option>
+                    <option value="Teknik Kendaraan Ringan (TKR)">Teknik Kendaraan Ringan (TKR)</option>
+                    <option value="Teknik Sepeda Motor (TSM)">Teknik Sepeda Motor (TSM)</option>
+                    <option value="Layanan Kesehatan (Lkes)">Layanan Kesehatan (Lkes)</option>
+                </select>
+            </div>
+            <div class="text-xs text-gray-400 font-mono" id="info_total">Total Data: Memuat...</div>
+        </div>
+
+        <!-- TABEL DATA -->
+        <div class="bg-gray-800 border border-gray-700 rounded-xl shadow-lg overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="bg-gray-900 text-gray-400 uppercase text-[11px] tracking-wider border-b border-gray-700">
+                            <th class="p-3.5">No. Daftar</th>
+                            <th class="p-3.5">Nama Lengkap</th>
+                            <th class="p-3.5">Tempat, Tanggal Lahir</th>
+                            <th class="p-3.5">Jurusan</th>
+                            <th class="p-3.5">No. Murid / Ortu</th>
+                            <th class="p-3.5 text-center">Hadir MPLS</th>
+                            <th class="p-3.5 text-center">Kode Voucher</th>
+                            <th class="p-3.5 text-center">Status Voucher</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabel_privasi" class="divide-y divide-gray-700/50">
+                        <tr>
+                            <td colspan="8" class="text-center p-8 text-gray-400">Memuat data privasi...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://ldkybpknxwtmgttwezbl.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_TM3B4XBbktJS_oGPRYYIgQ_x64yMCfG';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let cacheDataGlobal = [];
+
+        async function muatDataPrivasi() {
+            const keyword = document.getElementById('cari_keyword').value.trim();
+            const cariVoucher = document.getElementById('cari_voucher').value.trim();
+            const jurusan = document.getElementById('filter_jurusan').value;
+            const tbody = document.getElementById('tabel_privasi');
+            
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-gray-400">Menarik data aman...</td></tr>`;
+
+            let query = supabaseClient.from('pendaftar').select('*').order('created_at', { ascending: false });
+            
+            if (jurusan) {
+                query = query.eq('jurusan', jurusan);
+            }
+
+            const { data, error } = await query;
+
+            if (error) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-red-400 font-semibold">Gagal memuat data: ${error.message}</td></tr>`;
+                return;
+            }
+
+            let filteredData = data;
+            if (keyword) {
+                filteredData = filteredData.filter(p => 
+                    (p.nama && p.nama.toUpperCase().includes(keyword)) || 
+                    (p.no_pendaftaran && p.no_pendaftaran.toUpperCase().includes(keyword))
+                );
+            }
+
+            if (cariVoucher) {
+                filteredData = filteredData.filter(p => 
+                    p.kode_voucher && p.kode_voucher.toUpperCase().includes(cariVoucher)
+                );
+            }
+
+            cacheDataGlobal = filteredData;
+            document.getElementById('info_total').innerText = `Total Data: ${filteredData.length} Pendaftar`;
+
+            if (!filteredData || filteredData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-gray-400">Tidak ada data ditemukan.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = '';
+            filteredData.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-750 transition text-gray-200 text-xs";
+                
+                const ttl = `${p.tempat_lahir || '-'}, ${p.tgl_lahir || '-'}`;
+                const kontak = `M: ${p.no_hp || '-'}<br>O: ${p.no_hp_ortu || '-'}`;
+                
+                const sudahDitukar = p.voucher_ditukar === true;
+                const statusBadge = sudahDitukar 
+                    ? `<span class="bg-emerald-900 text-emerald-200 px-2.5 py-1 rounded-full font-bold text-[10px] inline-block">✅ SUDAH DITUKAR</span>` 
+                    : `<span class="bg-yellow-900/80 text-yellow-200 px-2.5 py-1 rounded-full font-bold text-[10px] inline-block">⏳ BELUM DITUKAR</span>`;
+
+                const tombolTukarAction = sudahDitukar
+                    ? `<button onclick="ubahStatusVoucher('${p.nisn}', false)" class="text-[10px] text-gray-400 hover:text-yellow-400 underline block mx-auto mt-1">Batalkan</button>`
+                    : `<button onclick="ubahStatusVoucher('${p.nisn}', true)" class="bg-emerald-600 hover:bg-emerald-500 text-white px-2 py-1 rounded text-[10px] font-bold shadow transition block mx-auto mt-1">Tandai Ditukar</button>`;
+
+                tr.innerHTML = `
+                    <td class="p-3.5 font-mono font-bold text-indigo-400">${p.no_pendaftaran || '-'}</td>
+                    <td class="p-3.5 font-bold text-white">${p.nama || '-'}</td>
+                    <td class="p-3.5 text-gray-300">${ttl}</td>
+                    <td class="p-3.5 text-gray-300">${p.jurusan || '-'}</td>
+                    <td class="p-3.5 font-mono text-gray-300">${kontak}</td>
+                    <td class="p-3.5 text-center">
+                        <span class="px-2 py-0.5 rounded font-bold ${p.hadir_mpls === true || p.hadir_mpls === 'SUDAH' || p.hadir_mpls === 'HADIR' ? 'bg-green-900 text-green-200' : 'bg-gray-700 text-gray-300'}">
+                            ${p.hadir_mpls || 'BELUM'}
+                        </span>
+                    </td>
+                    <td class="p-3.5 text-center font-mono font-bold text-yellow-400 text-sm">${p.kode_voucher || '-'}</td>
+                    <td class="p-3.5 text-center">
+                        <div>${statusBadge}</div>
+                        ${p.kode_voucher ? tombolTukarAction : ''}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function ubahStatusVoucher(nisn, statusBaru) {
+            const { error } = await supabaseClient
+                .from('pendaftar')
+                .update({ 
+                    voucher_ditukar: statusBaru,
+                    tanggal_tukar_voucher: statusBaru ? new Date().toISOString() : null
+                })
+                .eq('nisn', nisn);
+
+            if (error) {
+                alert("Gagal memperbarui status voucher: " + error.message);
+                return;
+            }
+
+            muatDataPrivasi();
+        }
+
+        function downloadCSV() {
+            if (!cacheDataGlobal || cacheDataGlobal.length === 0) {
+                alert("Tidak ada data untuk diunduh!");
+                return;
+            }
+
+            const keys = Object.keys(cacheDataGlobal[0]);
+            let csvContent = "data:text/csv;charset=utf-8," + keys.join(",") + "\n";
+
+            cacheDataGlobal.forEach(row => {
+                const values = keys.map(key => {
+                    let val = row[key] !== null && row[key] !== undefined ? row[key] : "";
+                    val = String(val).replace(/"/g, '""');
+                    return `"${val}"`;
+                });
+                csvContent += values.join(",") + "\n";
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Rekap_Voucher_SPMB_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        window.onload = function() {
+            muatDataPrivasi();
+        };
+    </script>
+</body>
+</html>

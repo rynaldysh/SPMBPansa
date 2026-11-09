@@ -3,41 +3,193 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Penerimaan Mahasiswa/Siswa Baru (SPMB)</title>
+    <title>Sistem Penerimaan Murid Baru (SPMB) - Beranda</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Chart.js untuk Visualisasi Grafik Batang -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        ::-webkit-scrollbar { height: 8px; width: 8px; }
+        ::-webkit-scrollbar-track { background: #1f2937; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+    </style>
 </head>
-<body class="bg-gray-100 min-h-screen text-gray-800 font-sans p-4 md:p-8">
+<body class="bg-gray-900 min-h-screen text-gray-100 font-sans p-4 md:p-6">
 
-    <div class="max-w-5xl mx-auto">
-        <header class="bg-blue-700 text-white p-4 rounded-t-lg shadow-md mb-6 text-center">
-            <h1 class="text-2xl font-bold">SPMB Online System</h1>
-            <p class="text-sm text-blue-200 mt-1">Dashboard Pelayanan Pendaftaran</p>
+    <div class="max-w-5xl mx-auto space-y-8">
+        
+        <!-- HEADER UTAMA -->
+        <header class="bg-gray-800 border border-gray-700 text-white p-6 rounded-2xl shadow-xl text-center space-y-2">
+            <span class="bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Tahun Ajaran 2026/2027</span>
+            <h1 class="text-2xl md:text-3xl font-bold mt-2">Sistem Penerimaan Murid Baru (SPMB)</h1>
+            <p class="text-gray-400 text-sm">Selamat datang di portal pendaftaran dan informasi resmi sekolah.</p>
         </header>
 
-        <section class="bg-white p-6 rounded-b-lg shadow-md min-h-[60vh]">
-            <h2 class="text-xl font-bold text-center text-gray-800 mb-8">Pilih Pos Layanan</h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Pos 1 -->
-                <a href="pos1_pendaftaran.html" class="block bg-gray-50 border border-gray-200 p-6 rounded-lg shadow hover:shadow-md transition text-left border-l-4 border-l-blue-500 group">
-                    <h3 class="text-xl font-bold text-blue-700 group-hover:text-blue-800">1. Pendaftaran</h3>
-                    <p class="text-sm text-gray-600 mt-2">Data Diri, Jurusan, Asal Sekolah, dan Data Referral/Pembawa.</p>
+        <!-- TOMBOL / MENU NAVIGASI UTAMA -->
+        <div class="bg-gray-800 border border-gray-700 p-6 rounded-2xl shadow-xl space-y-4">
+            <h2 class="text-lg font-bold text-white border-b border-gray-700 pb-3 flex items-center gap-2">
+                <span>📌</span> Menu Navigasi Utama
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <a href="pos1_pendaftaran.html" class="block bg-indigo-600 hover:bg-indigo-500 text-white font-bold p-4 rounded-xl text-center transition shadow-lg text-sm">
+                    📝 Pendaftaran Siswa Baru (Pos 1)
                 </a>
-                
-                <!-- Pos 2 (Sebelumnya Pos 3, sekarang Data Online yang diperbarui) -->
-                <a href="pos3_dataonline.html" class="block bg-gray-50 border border-gray-200 p-6 rounded-lg shadow hover:shadow-md transition text-left border-l-4 border-l-yellow-500 group">
-                    <h3 class="text-xl font-bold text-yellow-700 group-hover:text-yellow-800">2. Data Online</h3>
-                    <p class="text-sm text-gray-600 mt-2">Pengisian NIK, Data Fisik, Detail Keluarga, dan Pendidikan Orang Tua/Wali.</p>
+                <a href="pos3_dataonline.html" class="block bg-gray-700 hover:bg-gray-600 text-white font-bold p-4 rounded-xl text-center transition shadow-lg text-sm border border-gray-600">
+                    🔍 Cek Data Online
                 </a>
-                
-                <!-- Pos 3 (Sebelumnya Pos 4 Verifikasi Admin) -->
-                <a href="pos4_verifikasi.html" class="block bg-gray-50 border border-gray-200 p-6 rounded-lg shadow hover:shadow-md transition text-left border-l-4 border-l-red-500 group">
-                    <h3 class="text-xl font-bold text-red-700 group-hover:text-red-800">3. Verifikasi Admin</h3>
-                    <p class="text-sm text-gray-600 mt-2">Dashboard khusus panitia (Input Voucher & Status Ukur Baju).</p>
+                <a href="pos4_verifikasi.html" class="block bg-gray-700 hover:bg-gray-600 text-white font-bold p-4 rounded-xl text-center transition shadow-lg text-sm border border-gray-600">
+                    ⚙️ Verifikasi & Seleksi (Pos 4)
                 </a>
             </div>
-        </section>
+        </div>
+
+        <!-- BAGIAN VISUALISASI DATA (GRAFIK BATANG & TOTAL) -->
+        <div class="bg-gray-800 border border-gray-700 p-6 rounded-2xl shadow-xl space-y-6">
+            <div class="flex flex-wrap justify-between items-center gap-4 border-b border-gray-700 pb-4">
+                <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                    <span>📊</span> Statistik Pendaftar Diterima (Per Jurusan & Gender)
+                </h2>
+                <button onclick="muatGrafikSPMB()" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition border border-gray-600 shadow">
+                    🔄 Refresh Grafik
+                </button>
+            </div>
+
+            <!-- Canvas Chart.js -->
+            <div class="relative w-full h-80 md:h-96">
+                <canvas id="chartJurusan"></canvas>
+            </div>
+
+            <!-- Kotak Total Pendaftar di Bawah Chart -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-gray-700 text-center">
+                <div class="bg-gray-900/60 border border-gray-700 p-4 rounded-xl">
+                    <div class="text-xs text-gray-400 uppercase tracking-wider">Total Laki-laki Diterima</div>
+                    <div class="text-2xl font-bold text-indigo-400 mt-1" id="total_l_diterima">0</div>
+                </div>
+                <div class="bg-gray-900/60 border border-gray-700 p-4 rounded-xl">
+                    <div class="text-xs text-gray-400 uppercase tracking-wider">Total Perempuan Diterima</div>
+                    <div class="text-2xl font-bold text-pink-400 mt-1" id="total_p_diterima">0</div>
+                </div>
+                <div class="bg-gray-900/60 border border-gray-700 p-4 rounded-xl">
+                    <div class="text-xs text-gray-400 uppercase tracking-wider">Keseluruhan Diterima</div>
+                    <div class="text-2xl font-bold text-emerald-400 mt-1" id="total_keseluruhan_diterima">0</div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
+    <script>
+        const SUPABASE_URL = 'https://ldkybpknxwtmgttwezbl.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_TM3B4XBbktJS_oGPRYYIgQ_x64yMCfG';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let myChartInstance = null;
+
+        async function muatGrafikSPMB() {
+            // Daftar lengkap jurusan sesuai form pendaftaran
+            const daftarJurusan = [
+                "Teknik Otomotif (Kendaraan Ringan)",
+                "Teknik Otomotif (Sepeda Motor)",
+                "Teknik Pengelasan dan Fabrikasi Logam (TPFL)",
+                "Teknik Jaringan Komputer dan Telekomunikasi (TJKT)",
+                "Teknik Mesin (TM)",
+                "Layanan Kesehatan (Lkes)"
+            ];
+
+            let dataLaki = [0, 0, 0, 0, 0, 0];
+            let dataPerempuan = [0, 0, 0, 0, 0, 0];
+            let totalL = 0;
+            let totalP = 0;
+
+            const { data, error } = await supabaseClient
+                .from('pendaftar')
+                .select('*')
+                .eq('aksi', 'DITERIMA');
+
+            if (!error && data && data.length > 0) {
+                data.forEach(p => {
+                    const jurusanSiswa = p.jurusan;
+                    const jk = (p.jenis_kelamin || p.jk || '').toUpperCase();
+                    const isLaki = jk.startsWith('L');
+
+                    const indexJurusan = daftarJurusan.indexOf(jurusanSiswa);
+                    if (indexJurusan !== -1) {
+                        if (isLaki) {
+                            dataLaki[indexJurusan]++;
+                            totalL++;
+                        } else {
+                            dataPerempuan[indexJurusan]++;
+                            totalP++;
+                        }
+                    }
+                });
+            }
+
+            document.getElementById('total_l_diterima').innerText = totalL;
+            document.getElementById('total_p_diterima').innerText = totalP;
+            document.getElementById('total_keseluruhan_diterima').innerText = totalL + totalP;
+
+            const ctx = document.getElementById('chartJurusan').getContext('2d');
+            
+            if (myChartInstance) {
+                myChartInstance.destroy();
+            }
+
+            myChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: daftarJurusan,
+                    datasets: [
+                        {
+                            label: 'Laki-laki',
+                            data: dataLaki,
+                            backgroundColor: 'rgba(99, 102, 241, 0.8)',
+                            borderColor: 'rgba(99, 102, 241, 1)',
+                            borderWidth: 1,
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Perempuan',
+                            data: dataPerempuan,
+                            backgroundColor: 'rgba(236, 72, 153, 0.8)',
+                            borderColor: 'rgba(236, 72, 153, 1)',
+                            borderWidth: 1,
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            ticks: { 
+                                color: '#9ca3af', 
+                                font: { size: 10 },
+                                maxRotation: 25,
+                                minRotation: 0
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            ticks: { color: '#9ca3af', stepSize: 1 }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: { color: '#e5e7eb', font: { size: 12 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        window.onload = function() {
+            muatGrafikSPMB();
+        };
+    </script>
 </body>
 </html>
