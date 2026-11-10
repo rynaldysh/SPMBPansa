@@ -132,8 +132,8 @@
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
-                            <label class="block text-sm font-semibold mb-1">Tempat Lahir</label>
-                            <input type="text" id="tempat_lahir" class="w-full border border-gray-300 p-2 rounded uppercase-input" placeholder="Contoh: KUTOARJO">
+                            <label class="block text-sm font-semibold mb-1">Tempat Lahir <span class="text-red-500">*</span></label>
+                            <input type="text" id="tempat_lahir" class="w-full border border-gray-300 p-2 rounded uppercase-input" placeholder="Contoh: KUTOARJO" required>
                         </div>
                         <div>
                             <label class="block text-sm font-semibold mb-1">Tanggal Lahir <span class="text-red-500">*</span></label>
@@ -164,16 +164,19 @@
                             </select>
                         </div>
                     </div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-semibold mb-1">Asal Sekolah</label>
-                        <!-- Dropdown dengan opsi dari database dan pilihan "Lainnya" -->
-                        <select id="asal_sekolah_select" onchange="handleAsalSekolahChange(this)" class="w-full border border-gray-300 p-2 rounded bg-white mb-2">
-                            <option value="">-- Pilih Asal Sekolah --</option>
-                            <!-- Opsi SMP dimuat otomatis via JS -->
-                            <option value="LAINNYA">-- LAINNYA (Ketik Sendiri) --</option>
-                        </select>
-                        <!-- Input manual jika memilih Lainnya -->
-                        <input type="text" id="asal_sekolah_manual" class="w-full border border-gray-300 p-2 rounded uppercase-input hidden" placeholder="KETIK NAMA SMP/MTS BARU DI SINI...">
+                    <!-- 2 Kolom Asal Sekolah -->
+                    <div class="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold mb-1">Asal Sekolah (Pilih / Ketik Huruf / Angka) <span class="text-red-500">*</span></label>
+                            <input type="text" id="asal_sekolah_input" list="list_smp" class="w-full border border-gray-300 p-2 rounded uppercase-input" placeholder="Ketik nama atau angka sekolah..." required autocomplete="off">
+                            <datalist id="list_smp">
+                                <!-- Data SMP dimuat otomatis via JavaScript -->
+                            </datalist>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-1">Nama Sekolah Lainnya (Jika Pilih Lainnya)</label>
+                            <input type="text" id="asal_sekolah_manual" class="w-full border border-gray-300 p-2 rounded uppercase-input bg-gray-100" placeholder="Terbuka jika kolom 1 memilih LAINNYA..." disabled>
+                        </div>
                     </div>
                 </div>
 
@@ -181,25 +184,25 @@
                 <div class="bg-gray-50 p-4 rounded border">
                     <h3 class="font-bold text-gray-700 mb-4 border-b pb-2">Alamat & Data Orang Tua/Wali</h3>
                     <div class="mb-4">
-                        <label class="block text-sm font-semibold mb-1">Alamat (Jalan/Dusun)</label>
-                        <input type="text" id="alamat" class="w-full border border-gray-300 p-2 rounded mb-2" placeholder="Nama Jalan / Dusun / RT-RW">
+                        <label class="block text-sm font-semibold mb-1">Alamat (Jalan/Dusun) <span class="text-red-500">*</span></label>
+                        <input type="text" id="alamat" class="w-full border border-gray-300 p-2 rounded mb-2 uppercase-input" placeholder="Nama Jalan / Dusun / RT-RW" required>
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-2">
-                            <input type="text" id="rt" class="border border-gray-300 p-2 rounded uppercase-input" placeholder="RT">
-                            <input type="text" id="rw" class="border border-gray-300 p-2 rounded uppercase-input" placeholder="RW">
-                            <input type="text" id="kecamatan" class="border border-gray-300 p-2 rounded uppercase-input" placeholder="Kecamatan">
-                            <input type="text" id="kabupaten" class="border border-gray-300 p-2 rounded uppercase-input" placeholder="Kabupaten">
+                            <input type="text" id="rt" class="border border-gray-300 p-2 rounded uppercase-input" placeholder="RT" required>
+                            <input type="text" id="rw" class="border border-gray-300 p-2 rounded uppercase-input" placeholder="RW" required>
+                            <input type="text" id="kecamatan" class="border border-gray-300 p-2 rounded uppercase-input" placeholder="Kecamatan" required>
+                            <input type="text" id="kabupaten" class="border border-gray-300 p-2 rounded uppercase-input" placeholder="Kabupaten" required>
                         </div>
-                        <input type="text" id="provinsi" class="w-full border border-gray-300 p-2 rounded uppercase-input" placeholder="Provinsi">
+                        <input type="text" id="provinsi" class="w-full border border-gray-300 p-2 rounded uppercase-input" placeholder="Provinsi" required>
                     </div>
                     
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         <div>
-                            <label class="block text-sm font-semibold mb-1">Nama Ayah</label>
-                            <input type="text" id="nama_ayah" class="w-full border border-gray-300 p-2 rounded uppercase-input" placeholder="Nama Ayah Kandung">
+                            <label class="block text-sm font-semibold mb-1">Nama Ayah <span class="text-red-500">*</span></label>
+                            <input type="text" id="nama_ayah" class="w-full border border-gray-300 p-2 rounded uppercase-input" placeholder="Nama Ayah Kandung" required>
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold mb-1">Nama Ibu</label>
-                            <input type="text" id="nama_ibu" class="w-full border border-gray-300 p-2 rounded uppercase-input" placeholder="Nama Ibu Kandung">
+                            <label class="block text-sm font-semibold mb-1">Nama Ibu <span class="text-red-500">*</span></label>
+                            <input type="text" id="nama_ibu" class="w-full border border-gray-300 p-2 rounded uppercase-input" placeholder="Nama Ibu Kandung" required>
                         </div>
                         <div>
                             <label class="block text-sm font-semibold mb-1">Nama Wali</label>
@@ -209,16 +212,17 @@
                     
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
-                            <label class="block text-sm font-semibold mb-1">No. HP / WA Siswa</label>
-                            <input type="tel" id="hp_siswa" class="w-full border border-gray-300 p-2 rounded" placeholder="Contoh: 081234567890">
+                            <label class="block text-sm font-semibold mb-1">No. HP / WA Siswa <span class="text-red-500">*</span></label>
+                            <input type="tel" id="hp_siswa" class="w-full border border-gray-300 p-2 rounded" placeholder="Contoh: 081234567890" required>
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold mb-1">No. HP Ortu/Wali</label>
-                            <input type="tel" id="hp_ortu" class="w-full border border-gray-300 p-2 rounded" placeholder="Contoh: 081234567890">
+                            <label class="block text-sm font-semibold mb-1">No. HP Ortu/Wali <span class="text-red-500">*</span></label>
+                            <input type="tel" id="hp_ortu" class="w-full border border-gray-300 p-2 rounded" placeholder="Contoh: 081234567890" required>
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold mb-1">Mengetahui Info Dari</label>
-                            <select id="sumber_info" class="w-full border border-gray-300 p-2 rounded bg-white">
+                            <label class="block text-sm font-semibold mb-1">Mengetahui Info Dari <span class="text-red-500">*</span></label>
+                            <select id="sumber_info" class="w-full border border-gray-300 p-2 rounded bg-white" required>
+                                <option value="">-- Pilih Sumber Info --</option>
                                 <option value="Presentasi SPMB di Sekolah">Presentasi SPMB di Sekolah</option>
                                 <option value="Sosial Media">Sosial Media</option>
                                 <option value="Siswa/Alumni Pansa">Siswa/Alumni Pansa</option>
@@ -297,8 +301,6 @@
 
     <!-- AREA CETAK 2 HALAMAN A4 (PERSIS DOCX) -->
     <div id="printArea" class="hidden">
-        
-        <!-- ================= HALAMAN 1 : BIODATA LENGKAP HIJAU ================= -->
         <div class="page-sheet">
             <div style="text-align: center; margin-bottom: 5px;">
                 <img src="https://lh3.googleusercontent.com/d/1Yypgj6ns2keiS17HtN4vTO_Rn6ATkBhd" style="max-height: 3.5cm; width: auto; max-width: 100%; display: inline-block;">
@@ -315,84 +317,24 @@
 
             <table class="print-table">
                 <tr><td colspan="3" class="print-header-bg">INFO PENDAFTARAN</td></tr>
-                <tr>
-                    <td style="width: 5%; text-align: center;">1</td>
-                    <td style="width: 33%;">Nomor Pendaftaran / NISN</td>
-                    <td id="p_no_nisn"></td>
-                </tr>
-                <tr>
-                    <td style="text-align: center;">2</td>
-                    <td>Jurusan</td>
-                    <td id="p_jurusan"></td>
-                </tr>
-                <tr>
-                    <td style="text-align: center;">3</td>
-                    <td>Jenis Pendaftaran</td>
-                    <td id="p_jenis"></td>
-                </tr>
-                
+                <tr><td style="width: 5%; text-align: center;">1</td><td style="width: 33%;">Nomor Pendaftaran / NISN</td><td id="p_no_nisn"></td></tr>
+                <tr><td style="text-align: center;">2</td><td>Jurusan</td><td id="p_jurusan"></td></tr>
+                <tr><td style="text-align: center;">3</td><td>Jenis Pendaftaran</td><td id="p_jenis"></td></tr>
                 <tr><td colspan="3" class="print-header-bg">DATA CALON MURID BARU</td></tr>
-                <tr>
-                    <td style="text-align: center;">4</td>
-                    <td>Nama Lengkap</td>
-                    <td id="p_nama"></td>
-                </tr>
-                <tr>
-                    <td style="text-align: center;">5</td>
-                    <td>Tempat / Tanggal Lahir</td>
-                    <td id="p_ttl"></td>
-                </tr>
-                <tr>
-                    <td style="text-align: center;">6</td>
-                    <td>Jenis Kelamin/ Agama</td>
-                    <td id="p_jk_agama"></td>
-                </tr>
-                <tr>
-                    <td style="text-align: center;">7</td>
-                    <td>Alamat</td>
-                    <td id="p_alamat1"></td>
-                </tr>
-                <tr>
-                    <td style="border-top: none; border-bottom: none;"></td>
-                    <td style="border-top: none; border-bottom: none;"></td>
-                    <td id="p_alamat2"></td>
-                </tr>
-                <tr>
-                    <td style="text-align: center;">8</td>
-                    <td>Nomor HP / Whatsapp</td>
-                    <td id="p_hp_siswa"></td>
-                </tr>
-
+                <tr><td style="text-align: center;">4</td><td>Nama Lengkap</td><td id="p_nama"></td></tr>
+                <tr><td style="text-align: center;">5</td><td>Tempat / Tanggal Lahir</td><td id="p_ttl"></td></tr>
+                <tr><td style="text-align: center;">6</td><td>Jenis Kelamin/ Agama</td><td id="p_jk_agama"></td></tr>
+                <tr><td style="text-align: center;">7</td><td>Alamat</td><td id="p_alamat1"></td></tr>
+                <tr><td style="border-top: none; border-bottom: none;"></td><td style="border-top: none; border-bottom: none;"></td><td id="p_alamat2"></td></tr>
+                <tr><td style="text-align: center;">8</td><td>Nomor HP / Whatsapp</td><td id="p_hp_siswa"></td></tr>
                 <tr><td colspan="3" class="print-header-bg">DATA ORANG TUA</td></tr>
-                <tr>
-                    <td style="text-align: center;">9</td>
-                    <td>Nama Ayah / Nama Ibu</td>
-                    <td id="p_ortu"></td>
-                </tr>
-                <tr>
-                    <td style="text-align: center;">10</td>
-                    <td>Nomor HP / Whatsapp (Ortu)</td>
-                    <td id="p_hp_ortu"></td>
-                </tr>
-
+                <tr><td style="text-align: center;">9</td><td>Nama Ayah / Nama Ibu</td><td id="p_ortu"></td></tr>
+                <tr><td style="text-align: center;">10</td><td>Nomor HP / Whatsapp (Ortu)</td><td id="p_hp_ortu"></td></tr>
                 <tr><td colspan="3" class="print-header-bg">DATA PRESTASI (Terbaru dan Terbaik)</td></tr>
-                <tr>
-                    <td style="text-align: center;">11</td>
-                    <td>Jenjang Prestasi</td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td style="text-align: center;">12</td>
-                    <td>Peringkat / Juara</td>
-                    <td></td>
-                </tr>
-
+                <tr><td style="text-align: center;">11</td><td>Jenjang Prestasi</td><td></td></tr>
+                <tr><td style="text-align: center;">12</td><td>Peringkat / Juara</td><td></td></tr>
                 <tr><td colspan="3" class="print-header-bg">DATA LAINYA</td></tr>
-                <tr>
-                    <td style="text-align: center;">13</td>
-                    <td>Asal Sekolah</td>
-                    <td id="p_sekolah"></td>
-                </tr>
+                <tr><td style="text-align: center;">13</td><td>Asal Sekolah</td><td id="p_sekolah"></td></tr>
             </table>
 
             <div style="margin-top: 10pt; font-size: 11pt;">
@@ -400,13 +342,10 @@
                     <span style="font-weight: bold;">Informasi Pendaftaran:</span><br>
                     <span id="p_referral"></span>
                 </div>
-
                 <div style="float: right; width: 220px; text-align: left;">
                     Kutoarjo, <span id="print_tanggal_ttd"></span><br>
                     Panitia SPMB 2027<br>
-                    <div style="margin-top: 2.2cm;"> 
-                        ..........................................
-                    </div>
+                    <div style="margin-top: 2.2cm;">..........................................</div>
                 </div>
                 <div style="clear: both;"></div>
             </div>
@@ -431,23 +370,17 @@
             </div>
         </div>
 
-        <!-- ================= HALAMAN 2 : FORMULIR RINGKAS ================= -->
         <div class="page-sheet">
             <div class="half-page">
                 <img src="https://lh3.googleusercontent.com/d/1SpyTxQzur32AjYNgbboaGxnjaEHRkOCS" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; opacity: 0.12; pointer-events: none; z-index: -1;">
-
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px;">
                     <div style="width: 25%;">
                         <div style="font-size: 11pt; margin-bottom: 5px;">Lembar 1<br><span style="font-weight: bold;">Untuk Pendaftar</span></div>
                         <img src="https://lh3.googleusercontent.com/d/1BRFdBXyEP8owXLjOl0wUPDgsj7YuolQI" style="width: 65px; height: auto;">
                     </div>
-                    
                     <div style="width: 50%; text-align: center; font-weight: bold; font-size: 11pt; line-height: 1.2; padding-top: 30px;">
-                        FORMULIR PENDAFTARAN<br>
-                        CALON MURID BARU SMK PANCASILA 1 KUTOARJO<br>
-                        TAHUN PELAJARAN 2027/2028
+                        FORMULIR PENDAFTARAN<br>CALON MURID BARU SMK PANCASILA 1 KUTOARJO<br>TAHUN PELAJARAN 2027/2028
                     </div>
-
                     <div style="width: 25%; text-align: right;">
                         <img src="https://lh3.googleusercontent.com/d/1cB3brK0UqWc0AZP9c_5X6O-oPKn1KuhG" style="height: 38px; margin-bottom: 5px;"><br>
                         <span style="font-size: 10pt;">NOMOR PENDAFTARAN</span><br>
@@ -470,24 +403,17 @@
                 <table style="width: 100%; border: none; margin-top: 15px;">
                     <tr>
                         <td style="vertical-align: top; border: none; padding: 0;">
-                            <div style="border: 2px solid black; width: 240px; height: 80px; text-align: center; padding-top: 5px; font-weight: bold; font-size: 11pt;">
-                                <u>Wawancara & ukur Baju</u>
-                            </div>
+                            <div style="border: 2px solid black; width: 240px; height: 80px; text-align: center; padding-top: 5px; font-weight: bold; font-size: 11pt;"><u>Wawancara & ukur Baju</u></div>
                             <div style="margin-top: 10px; font-size: 10pt;">Ket:</div>
                             <div style="margin-top: 20px; font-size: 10pt;">INFORMASI PPDB<br>0895 3210 10863</div>
                         </td>
                         <td style="vertical-align: bottom; text-align: center; border: none; padding: 0;">
-                            <div style="border: 1px dashed black; width: 2.2cm; height: 3cm; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 10pt;">
-                                Pas Foto<br>3x4
-                            </div>
+                            <div style="border: 1px dashed black; width: 2.2cm; height: 3cm; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 10pt;">Pas Foto<br>3x4</div>
                         </td>
                         <td style="vertical-align: top; text-align: right; border: none; padding: 0;">
                             <div style="text-align: left; display: inline-block; width: 190px; font-size: 11pt;">
-                                Kutoarjo, <span class="print_tgl_pendek"></span><br>
-                                Panitia SPMB 2027<br>
-                                <div style="margin-top: 2.2cm;">
-                                    ................................................
-                                </div>
+                                Kutoarjo, <span class="print_tgl_pendek"></span><br>Panitia SPMB 2027<br>
+                                <div style="margin-top: 2.2cm;">................................................</div>
                             </div>
                         </td>
                     </tr>
@@ -498,21 +424,16 @@
 
             <div class="half-page">
                 <img src="https://drive.google.com/uc?export=view&id=1SpyTxQzur32AjYNgbboaGxnjaEHRkOCS" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; opacity: 0.12; pointer-events: none; z-index: -1;">
-
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px;">
                     <div style="width: 25%;">
                         <div style="font-size: 11pt; margin-bottom: 5px;">Lembar 2<br><span style="font-weight: bold;">Untuk PANITIA</span></div>
                         <img src="https://drive.google.com/uc?export=view&id=1BRFdBXyEP8owXLjOl0wUPDgsj7YuolQI" style="width: 65px; height: auto;">
                     </div>
-                    
                     <div style="width: 50%; text-align: center; font-weight: bold; font-size: 11pt; line-height: 1.2; padding-top: 30px;">
-                        FORMULIR PENDAFTARAN<br>
-                        CALON MURID BARU SMK PANCASILA 1 KUTOARJO<br>
-                        TAHUN PELAJARAN 2027/2028
+                        FORMULIR PENDAFTARAN<br>CALON MURID BARU SMK PANCASILA 1 KUTOARJO<br>TAHUN PELAJARAN 2027/2028
                     </div>
-
                     <div style="width: 25%; text-align: right;">
-                        <img src="https://lh3.googleusercontent.com/d/1cB3brK0UqWc0AZP9c_5X6O-oPKn1KuhG" style="height: 38px; margin-bottom: 5px;"><br>
+                        <img src="https://drive.google.com/uc?export=view&id=1cB3brK0UqWc0AZP9c_5X6O-oPKn1KuhG" style="height: 38px; margin-bottom: 5px;"><br>
                         <span style="font-size: 10pt;">NOMOR PENDAFTARAN</span><br>
                         <span id="l2_no_daftar" style="font-size: 14pt; font-weight: bold;"></span>
                     </div>
@@ -533,31 +454,23 @@
                 <table style="width: 100%; border: none; margin-top: 15px;">
                     <tr>
                         <td style="vertical-align: top; border: none; padding: 0;">
-                            <div style="border: 2px solid black; width: 240px; height: 80px; text-align: center; padding-top: 5px; font-weight: bold; font-size: 11pt;">
-                                <u>Wawancara & ukur Baju</u>
-                            </div>
+                            <div style="border: 2px solid black; width: 240px; height: 80px; text-align: center; padding-top: 5px; font-weight: bold; font-size: 11pt;"><u>Wawancara & ukur Baju</u></div>
                             <div style="margin-top: 10px; font-size: 10pt;">Ket:</div>
                             <div style="margin-top: 20px; font-size: 10pt;">INFORMASI PPDB<br>0895 3210 10863</div>
                         </td>
                         <td style="vertical-align: bottom; text-align: center; border: none; padding: 0;">
-                            <div style="border: 1px dashed black; width: 2.2cm; height: 3cm; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 10pt;">
-                                Pas Foto<br>3x4
-                            </div>
+                            <div style="border: 1px dashed black; width: 2.2cm; height: 3cm; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 10pt;">Pas Foto<br>3x4</div>
                         </td>
                         <td style="vertical-align: top; text-align: right; border: none; padding: 0;">
                             <div style="text-align: left; display: inline-block; width: 190px; font-size: 11pt;">
-                                Kutoarjo, <span class="print_tgl_pendek"></span><br>
-                                Panitia SPMB 2027<br>
-                                <div style="margin-top: 2.2cm;">
-                                    ................................................
-                                </div>
+                                Kutoarjo, <span class="print_tgl_pendek"></span><br>Panitia SPMB 2027<br>
+                                <div style="margin-top: 2.2cm;">................................................</div>
                             </div>
                         </td>
                     </tr>
                 </table>
             </div>
-
-        </div> 
+        </div>
     </div>
 
     <!-- Modal Peringatan Duplikat Nama -->
@@ -578,54 +491,52 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
         let foundDuplicateData = null;
+        let daftarSmpGlobal = [];
 
         document.querySelectorAll('.uppercase-input').forEach(input => {
             input.addEventListener('input', function() { this.value = this.value.toUpperCase(); });
         });
 
-        // Memuat daftar SMP dari Supabase ke dalam dropdown Asal Sekolah
+        // Memuat daftar SMP dari Supabase ke datalist dan menyertakan opsi LAINNYA
         async function muatDaftarSmp() {
-            const selectSmp = document.getElementById('asal_sekolah_select');
+            const datalist = document.getElementById('list_smp');
             const { data, error } = await supabaseClient.from('daftar_smp').select('nama_smp').order('nama_smp', { ascending: true });
             
             if (!error && data) {
-                // Simpan elemen opsi "LAINNYA"
-                const opsiLainnya = selectSmp.querySelector('option[value="LAINNYA"]');
-                
-                // Bersihkan dropdown kecuali default & lainnya
-                selectSmp.innerHTML = '<option value="">-- Pilih Asal Sekolah --</option>';
-                
-                data.forEach(item => {
-                    const opt = document.createElement('option');
-                    opt.value = item.nama_smp;
-                    opt.textContent = item.nama_smp;
-                    selectSmp.appendChild(opt);
-                });
-                
-                if (opsiLainnya) {
-                    selectSmp.appendChild(opsiLainnya);
-                } else {
-                    const optLain = document.createElement('option');
-                    optLain.value = 'LAINNYA';
-                    optLain.textContent = '-- LAINNYA (Ketik Sendiri) --';
-                    selectSmp.appendChild(optLain);
+                daftarSmpGlobal = data.map(item => item.nama_smp);
+                // Tambahkan opsi LAINNYA ke dalam array pencarian
+                if (!daftarSmpGlobal.includes('LAINNYA')) {
+                    daftarSmpGlobal.push('LAINNYA');
                 }
+
+                datalist.innerHTML = '';
+                daftarSmpGlobal.forEach(nama => {
+                    const opt = document.createElement('option');
+                    opt.value = nama;
+                    datalist.appendChild(opt);
+                });
             }
         }
 
-        function handleAsalSekolahChange(selectEl) {
+        // Listener saat mengetik atau memilih di kolom 1 Asal Sekolah
+        document.getElementById('asal_sekolah_input').addEventListener('input', function() {
+            const val = this.value.trim().toUpperCase();
             const inputManual = document.getElementById('asal_sekolah_manual');
-            if (selectEl.value === 'LAINNYA') {
-                inputManual.classList.remove('hidden');
-                inputManual.value = '';
-                inputManual.focus();
+
+            if (val === 'LAINNYA') {
+                inputManual.disabled = false;
+                inputManual.classList.remove('bg-gray-100');
+                inputManual.classList.add('bg-white');
                 inputManual.required = true;
+                inputManual.focus();
             } else {
-                inputManual.classList.add('hidden');
-                inputManual.value = selectEl.value;
+                inputManual.disabled = true;
+                inputManual.classList.add('bg-gray-100');
+                inputManual.classList.remove('bg-white');
+                inputManual.value = '';
                 inputManual.required = false;
             }
-        }
+        });
 
         // Validasi Umur
         document.getElementById('tgl_lahir').addEventListener('change', function() { hitungDanValidasiUmur(this.value); });
@@ -700,30 +611,27 @@
             document.getElementById('jk').value = data.jk || '';
             document.getElementById('agama').value = data.agama || '';
             
-            // Asal Sekolah Dropdown Handling
-            const selectSmp = document.getElementById('asal_sekolah_select');
-            const inputManual = document.getElementById('asal_sekolah_manual');
-            const sekolahVal = data.asal_sekolah || '';
-            
-            let foundInSelect = false;
-            for(let opt of selectSmp.options) {
-                if(opt.value === sekolahVal) {
-                    foundInSelect = true;
-                    break;
-                }
-            }
-            if(foundInSelect) {
-                selectSmp.value = sekolahVal;
-                inputManual.classList.add('hidden');
-                inputManual.value = '';
-            } else if(sekolahVal) {
-                selectSmp.value = 'LAINNYA';
-                inputManual.classList.remove('hidden');
-                inputManual.value = sekolahVal;
+            const asalSekolahVal = data.asal_sekolah || '';
+            const input1 = document.getElementById('asal_sekolah_input');
+            const input2 = document.getElementById('asal_sekolah_manual');
+
+            if (daftarSmpGlobal.includes(asalSekolahVal)) {
+                input1.value = asalSekolahVal;
+                input2.disabled = true;
+                input2.classList.add('bg-gray-100');
+                input2.classList.remove('bg-white');
+                input2.value = '';
+            } else if (asalSekolahVal) {
+                input1.value = 'LAINNYA';
+                input2.disabled = false;
+                input2.classList.remove('bg-gray-100');
+                input2.classList.add('bg-white');
+                input2.value = asalSekolahVal;
             } else {
-                selectSmp.value = '';
-                inputManual.classList.add('hidden');
-                inputManual.value = '';
+                input1.value = '';
+                input2.disabled = true;
+                input2.classList.add('bg-gray-100');
+                input2.value = '';
             }
 
             document.getElementById('alamat').value = data.alamat || '';
@@ -739,7 +647,7 @@
             document.getElementById('hp_siswa').value = data.hp_siswa || ''; 
             document.getElementById('hp_ortu').value = data.hp_ortu || '';
             
-            document.getElementById('sumber_info').value = data.sumber_info || 'Presentasi SPMB di Sekolah';
+            document.getElementById('sumber_info').value = data.sumber_info || '';
             document.getElementById('nama_pembawa').value = data.nama_pembawa || '';
             document.getElementById('alamat_pembawa').value = data.alamat_pembawa || '';
             document.getElementById('identitas_pembawa').value = data.identitas_pembawa || '';
@@ -866,7 +774,7 @@
             setTimeout(() => window.print(), 400);
         }
 
-        // Simpan Data / Update Data
+        // Simpan Data dengan Validasi Lengkap & Normalisasi SMP
         document.getElementById('formPendaftaran').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -882,18 +790,39 @@
                 document.getElementById('display_no_daftar').innerText = noDaftar;
             }
 
-            // Tentukan nilai asal sekolah akhir (dari dropdown atau input manual)
-            const pilihSmpVal = document.getElementById('asal_sekolah_select').value;
-            let finalAsalSekolah = pilihSmpVal;
-            if (pilihSmpVal === 'LAINNYA') {
-                finalAsalSekolah = document.getElementById('asal_sekolah_manual').value.trim().toUpperCase();
-                if (!finalAsalSekolah) {
-                    alert("Silakan masukkan nama Asal Sekolah secara manual!");
+            // Pengolahan Asal Sekolah
+            const valInput1 = document.getElementById('asal_sekolah_input').value.trim().toUpperCase();
+            let finalAsalSekolah = "";
+
+            if (!valInput1) {
+                alert("Asal Sekolah wajib diisi!");
+                document.getElementById('asal_sekolah_input').focus();
+                return;
+            }
+
+            if (valInput1 === 'LAINNYA') {
+                const valInput2 = document.getElementById('asal_sekolah_manual').value.trim().toUpperCase();
+                if (!valInput2) {
+                    alert("Silakan ketik nama sekolah baru pada kolom kedua!");
                     document.getElementById('asal_sekolah_manual').focus();
                     return;
                 }
-                // Otomatis masukkan ke tabel daftar_smp di Supabase agar tersimpan permanen
-                await supabaseClient.from('daftar_smp').upsert({ nama_smp: finalAsalSekolah }, { onConflict: 'nama_smp' });
+                finalAsalSekolah = valInput2.replace(/\s+/g, ' ');
+
+                // Cek apakah sudah ada di database untuk mencegah double data
+                const { data: existingSmp } = await supabaseClient
+                    .from('daftar_smp')
+                    .select('*')
+                    .ilike('nama_smp', finalAsalSekolah)
+                    .maybeSingle();
+
+                if (existingSmp) {
+                    finalAsalSekolah = existingSmp.nama_smp;
+                } else {
+                    await supabaseClient.from('daftar_smp').insert({ nama_smp: finalAsalSekolah });
+                }
+            } else {
+                finalAsalSekolah = valInput1;
             }
 
             const payload = {
@@ -932,7 +861,9 @@
 
             alert("Data pendaftaran berhasil disimpan/diperbarui dengan No. Pendaftaran: " + noDaftar);
             document.getElementById('formPendaftaran').reset();
-            document.getElementById('asal_sekolah_manual').classList.add('hidden');
+            const input2 = document.getElementById('asal_sekolah_manual');
+            input2.disabled = true;
+            input2.classList.add('bg-gray-100');
             document.getElementById('keterangan_umur').innerHTML = '';
             document.getElementById('no_pendaftaran').value = '';
             document.getElementById('display_no_daftar').innerText = 'Otomatis saat disimpan';
