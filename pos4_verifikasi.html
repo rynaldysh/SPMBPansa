@@ -77,13 +77,14 @@
                             <th class="p-3 border-b text-center">Baju</th>
                             <th class="p-3 border-b text-center">Celana</th>
                             <th class="p-3 border-b text-center">Status Aksi</th>
+                            <th class="p-3 border-b text-center">Daftar Ulang</th>
                             <th class="p-3 border-b">Keterangan</th>
                             <th class="p-3 border-b text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody id="tabel_pendaftar" class="divide-y divide-gray-200">
                         <tr>
-                            <td colspan="11" class="text-center p-6 text-gray-500">Memuat data verifikasi...</td>
+                            <td colspan="12" class="text-center p-6 text-gray-500">Memuat data verifikasi...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -100,7 +101,7 @@
         async function muatDataVerifikasi() {
             const jurusanFilter = document.getElementById('filter_jurusan').value;
             const tbody = document.getElementById('tabel_pendaftar');
-            tbody.innerHTML = `<tr><td colspan="11" class="text-center p-6 text-gray-500">Memuat data...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="12" class="text-center p-6 text-gray-500">Memuat data...</td></tr>`;
 
             let query = supabaseClient.from('pendaftar').select('*').order('created_at', { ascending: false });
             if (jurusanFilter) {
@@ -110,12 +111,12 @@
             const { data, error } = await query;
 
             if (error) {
-                tbody.innerHTML = `<tr><td colspan="11" class="text-center p-6 text-red-500 font-semibold">Gagal memuat data: ${error.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="12" class="text-center p-6 text-red-500 font-semibold">Gagal memuat data: ${error.message}</td></tr>`;
                 return;
             }
 
             if (!data || data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="11" class="text-center p-6 text-gray-500">Tidak ada data pendaftar ditemukan.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="12" class="text-center p-6 text-gray-500">Tidak ada data pendaftar ditemukan.</td></tr>`;
                 return;
             }
 
@@ -191,6 +192,15 @@
                         </select>
                     </td>
 
+                    <!-- DAFTAR ULANG -->
+                    <td class="p-3 text-center">
+                        <select id="daftar_ulang_${p.nisn}" class="border border-gray-300 px-2 py-1 rounded text-xs font-bold ${p.daftar_ulang === 'LUNAS' ? 'text-green-600 bg-green-50' : (p.daftar_ulang === 'SEBAGIAN' ? 'text-yellow-600 bg-yellow-50' : 'text-red-600 bg-red-50')}">
+                            <option value="BELUM" ${!p.daftar_ulang || p.daftar_ulang === 'BELUM' ? 'selected' : ''}>BELUM</option>
+                            <option value="SEBAGIAN" ${p.daftar_ulang === 'SEBAGIAN' ? 'selected' : ''}>SEBAGIAN</option>
+                            <option value="LUNAS" ${p.daftar_ulang === 'LUNAS' ? 'selected' : ''}>LUNAS</option>
+                        </select>
+                    </td>
+
                     <!-- KETERANGAN -->
                     <td class="p-3">
                         <input type="text" id="keterangan_${p.nisn}" value="${p.keterangan || ''}" placeholder="Catatan..." class="border border-gray-300 px-2 py-1 rounded text-xs w-full uppercase-input">
@@ -225,6 +235,7 @@
             const baju = document.getElementById(`baju_${nisn}`).value;
             const celana = document.getElementById(`celana_${nisn}`).value;
             const aksi = document.getElementById(`aksi_${nisn}`).value;
+            const daftarUlang = document.getElementById(`daftar_ulang_${nisn}`).value;
             const keterangan = document.getElementById(`keterangan_${nisn}`).value.trim();
 
             const { error } = await supabaseClient
@@ -237,6 +248,7 @@
                     baju: baju,
                     celana: celana,
                     aksi: aksi,
+                    daftar_ulang: daftarUlang,
                     keterangan: keterangan
                 })
                 .eq('nisn', nisn);

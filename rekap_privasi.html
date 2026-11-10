@@ -154,7 +154,7 @@
                 tr.className = "hover:bg-gray-750 transition text-gray-200 text-xs";
                 
                 const ttl = `${p.tempat_lahir || '-'}, ${p.tgl_lahir || '-'}`;
-                const kontak = `M: ${p.no_hp || '-'}<br>O: ${p.no_hp_ortu || '-'}`;
+                const kontak = `M: ${p.hp_siswa || '-'}<br>O: ${p.hp_ortu || '-'}`;
                 
                 const sudahDitukar = p.voucher_ditukar === true;
                 const statusBadge = sudahDitukar 
