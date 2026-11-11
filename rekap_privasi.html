@@ -106,8 +106,8 @@
         let cacheDataGlobal = [];
 
         async function muatDataPrivasi() {
-            const keyword = document.getElementById('cari_keyword').value.trim();
-            const cariVoucher = document.getElementById('cari_voucher').value.trim();
+            const keyword = document.getElementById('cari_keyword').value.trim().toUpperCase();
+            const cariVoucher = document.getElementById('cari_voucher').value.trim().toUpperCase();
             const jurusan = document.getElementById('filter_jurusan').value;
             const tbody = document.getElementById('tabel_privasi');
             
@@ -127,11 +127,14 @@
             }
 
             let filteredData = data;
+            
+            // Perbaikan fitur pencarian berdasarkan Nama Lengkap atau Nomor Pendaftaran secara fleksibel
             if (keyword) {
-                filteredData = filteredData.filter(p => 
-                    (p.nama && p.nama.toUpperCase().includes(keyword)) || 
-                    (p.no_pendaftaran && p.no_pendaftaran.toUpperCase().includes(keyword))
-                );
+                filteredData = filteredData.filter(p => {
+                    const namaSiswa = (p.nama || '').toUpperCase();
+                    const noDaftar = (p.no_pendaftaran || '').toUpperCase();
+                    return namaSiswa.includes(keyword) || noDaftar.includes(keyword);
+                });
             }
 
             if (cariVoucher) {
@@ -165,6 +168,9 @@
                     ? `<button onclick="ubahStatusVoucher('${p.nisn}', false)" class="text-[10px] text-gray-400 hover:text-yellow-400 underline block mx-auto mt-1">Batalkan</button>`
                     : `<button onclick="ubahStatusVoucher('${p.nisn}', true)" class="bg-emerald-600 hover:bg-emerald-500 text-white px-2 py-1 rounded text-[10px] font-bold shadow transition block mx-auto mt-1">Tandai Ditukar</button>`;
 
+                // Mengatur default HADIR jika status hadir/MPLS masih kosong/null
+                const statusHadir = p.hadir_mpls ? p.hadir_mpls : 'HADIR';
+
                 tr.innerHTML = `
                     <td class="p-3.5 font-mono font-bold text-indigo-400">${p.no_pendaftaran || '-'}</td>
                     <td class="p-3.5 font-bold text-white">${p.nama || '-'}</td>
@@ -172,8 +178,8 @@
                     <td class="p-3.5 text-gray-300">${p.jurusan || '-'}</td>
                     <td class="p-3.5 font-mono text-gray-300">${kontak}</td>
                     <td class="p-3.5 text-center">
-                        <span class="px-2 py-0.5 rounded font-bold ${p.hadir_mpls === true || p.hadir_mpls === 'SUDAH' || p.hadir_mpls === 'HADIR' ? 'bg-green-900 text-green-200' : 'bg-gray-700 text-gray-300'}">
-                            ${p.hadir_mpls || 'BELUM'}
+                        <span class="px-2 py-0.5 rounded font-bold ${statusHadir === 'HADIR' || statusHadir === 'SUDAH' ? 'bg-green-900 text-green-200' : 'bg-gray-700 text-gray-300'}">
+                            ${statusHadir}
                         </span>
                     </td>
                     <td class="p-3.5 text-center font-mono font-bold text-yellow-400 text-sm">${p.kode_voucher || '-'}</td>

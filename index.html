@@ -39,7 +39,7 @@
                     🔍 Cek Data Online
                 </a>
                 <a href="pos4_verifikasi.html" class="block bg-gray-700 hover:bg-gray-600 text-white font-bold p-4 rounded-xl text-center transition shadow-lg text-sm border border-gray-600">
-                    ⚙️ Verifikasi & Seleksi (Pos 4)
+                    ✅ Verifikasi & Seleksi (Pos 4)
                 </a>
             </div>
         </div>
@@ -87,7 +87,6 @@
         let myChartInstance = null;
 
         async function muatGrafikSPMB() {
-            // Daftar lengkap jurusan sesuai form pendaftaran
             const daftarJurusan = [
                 "Teknik Otomotif (Kendaraan Ringan)",
                 "Teknik Otomotif (Sepeda Motor)",
@@ -168,8 +167,29 @@
                             ticks: { 
                                 color: '#9ca3af', 
                                 font: { size: 10 },
-                                maxRotation: 25,
-                                minRotation: 0
+                                maxRotation: 0, // Tanpa rotasi miring
+                                minRotation: 0,
+                                autoSkip: false,
+                                // Memecah nama jurusan yang panjang menjadi beberapa baris (atas-bawah) secara otomatis
+                                callback: function(value) {
+                                    const label = this.getLabelForValue(value);
+                                    if (label.length > 22) {
+                                        const words = label.split(' ');
+                                        let lines = [];
+                                        let currentLine = '';
+                                        words.forEach(word => {
+                                            if ((currentLine + word).length > 22) {
+                                                lines.push(currentLine.trim());
+                                                currentLine = word + ' ';
+                                            } else {
+                                                currentLine += word + ' ';
+                                            }
+                                        });
+                                        lines.push(currentLine.trim());
+                                        return lines;
+                                    }
+                                    return label;
+                                }
                             }
                         },
                         y: {

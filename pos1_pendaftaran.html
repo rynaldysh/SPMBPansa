@@ -8,62 +8,43 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         .uppercase-input { text-transform: uppercase; }
-        #duplicateModalOverlay {
+        .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px);
             z-index: 1000; justify-content: center; align-items: center;
         }
-        #duplicateModalContent {
+        .modal-content {
             background-color: white; padding: 2.5rem; border-radius: 0.75rem;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); max-width: 90%; width: 500px; text-align: center;
         }
-        #duplicateModalOverlay.active { display: flex; }
+        .modal-overlay.active { display: flex; }
 
-        /* PENGATURAN CETAK PRESISI DOCX (WORD) */
         @media print {
-            @page { 
-                size: A4 portrait; 
-                margin: 0 !important; 
-            }
+            @page { size: A4 portrait; margin: 0 !important; }
+            body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             body * { visibility: hidden !important; }
             #printArea, #printArea * { visibility: visible !important; }
             #printArea { 
-                position: absolute !important; 
-                left: 0 !important; 
-                top: 0 !important; 
-                width: 100% !important; 
-                display: block !important;
-                font-family: Arial, Helvetica, sans-serif !important; 
-                font-size: 11pt !important; 
-                line-height: 1.25 !important;
-                color: black !important; 
-                background: white !important;
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
+                position: absolute !important; left: 0 !important; top: 0 !important; 
+                width: 100% !important; display: block !important;
+                font-family: Arial, Helvetica, sans-serif !important; font-size: 11pt !important; 
+                line-height: 1.18 !important; color: black !important; background: white !important;
             }
             .page-sheet { 
-                page-break-after: always; 
-                break-after: page; 
-                position: relative; 
-                box-sizing: border-box;
-                min-height: 297mm; 
-                padding: 1cm 1.5cm; 
+                page-break-after: always; break-after: page; position: relative; 
+                box-sizing: border-box; height: 297mm; overflow: hidden; padding: 5mm 10mm !important; 
             }
-            .half-page {
-                position: relative;
-                padding: 10px 0;
-                box-sizing: border-box;
-                height: 13.5cm; 
-            }
-            .dashed-divider {
-                border-top: 1px dashed #333;
-                margin: 5px 0;
-            }
+            .half-page { position: relative; padding: 10px 0; box-sizing: border-box; height: 13.5cm; }
+            .dashed-divider { border-top: 1px dashed #333; margin: 5px 0; }
         }
 
-        .print-table { width: 100%; border-collapse: collapse; margin-bottom: 8pt; font-size: 11pt; }
-        .print-table th, .print-table td { border: 1px solid black; padding: 4px 6px; vertical-align: middle; }
-        .print-header-bg { background-color: #00ff00 !important; color: black !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-weight: bold; text-align: center; }
+        .print-table { width: 100%; border-collapse: collapse; margin-bottom: 2pt !important; font-size: 11pt !important; }
+        .print-table th, .print-table td { border: 1px solid black; padding: 2px 4px !important; vertical-align: middle; }
+        .print-header-bg { 
+            background-color: #93c5fd !important; color: #000 !important; 
+            -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; 
+            font-weight: bold; text-align: center; 
+        }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen text-gray-800 font-sans p-4 md:p-8">
@@ -77,7 +58,6 @@
         <!-- FORM PENDAFTARAN -->
         <section class="bg-white p-6 rounded-b-lg shadow-md relative">
             <form id="formPendaftaran" class="space-y-6">
-                <!-- Cek Nomor Pendaftaran -->
                 <div class="bg-blue-50 p-4 border border-blue-200 rounded-md">
                     <label class="block text-sm font-bold text-blue-900 mb-2">Cek Data Lama (Berdasarkan Nomor Pendaftaran)</label>
                     <div class="flex gap-2">
@@ -86,7 +66,6 @@
                     </div>
                 </div>
 
-                <!-- Informasi Akademik -->
                 <div class="bg-gray-50 p-4 rounded border">
                     <div class="flex justify-between items-center mb-4 border-b pb-2">
                         <h3 class="font-bold text-gray-700">Informasi Akademik</h3>
@@ -118,7 +97,6 @@
                     </div>
                 </div>
 
-                <!-- Identitas Siswa -->
                 <div class="bg-gray-50 p-4 rounded border">
                     <h3 class="font-bold text-gray-700 mb-4 border-b pb-2">Identitas Siswa</h3>
                     <div class="mb-4">
@@ -164,14 +142,11 @@
                             </select>
                         </div>
                     </div>
-                    <!-- 2 Kolom Asal Sekolah -->
                     <div class="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-semibold mb-1">Asal Sekolah (Pilih / Ketik Huruf / Angka) <span class="text-red-500">*</span></label>
                             <input type="text" id="asal_sekolah_input" list="list_smp" class="w-full border border-gray-300 p-2 rounded uppercase-input" placeholder="Ketik nama atau angka sekolah..." required autocomplete="off">
-                            <datalist id="list_smp">
-                                <!-- Data SMP dimuat otomatis via JavaScript -->
-                            </datalist>
+                            <datalist id="list_smp"></datalist>
                         </div>
                         <div>
                             <label class="block text-sm font-semibold mb-1">Nama Sekolah Lainnya (Jika Pilih Lainnya)</label>
@@ -180,7 +155,20 @@
                     </div>
                 </div>
 
-                <!-- Alamat & Kontak -->
+                <div class="bg-gray-50 p-4 rounded border">
+                    <h3 class="font-bold text-gray-700 mb-4 border-b pb-2">Data Prestasi (Opsional)</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold mb-1">Jenjang Prestasi</label>
+                            <input type="text" id="jenjang_prestasi" class="w-full border border-gray-300 p-2 rounded uppercase-input" placeholder="Contoh: Kabupaten / Provinsi / Nasional">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-1">Peringkat / Juara</label>
+                            <input type="text" id="peringkat_juara" class="w-full border border-gray-300 p-2 rounded uppercase-input" placeholder="Contoh: Juara 1 Lomba Atletik">
+                        </div>
+                    </div>
+                </div>
+
                 <div class="bg-gray-50 p-4 rounded border">
                     <h3 class="font-bold text-gray-700 mb-4 border-b pb-2">Alamat & Data Orang Tua/Wali</h3>
                     <div class="mb-4">
@@ -233,7 +221,6 @@
                     </div>
                 </div>
 
-                <!-- Referral -->
                 <div class="bg-blue-50 p-4 rounded border border-blue-200">
                     <h3 class="font-bold text-blue-900 mb-4 border-b border-blue-200 pb-2">Data Referral (Pembawa Pendaftar)</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -299,7 +286,43 @@
         </section>
     </div>
 
-    <!-- AREA CETAK 2 HALAMAN A4 (PERSIS DOCX) -->
+    <!-- Modal Peringatan Duplikat Nama -->
+    <div id="duplicateModalOverlay" class="modal-overlay">
+        <div class="modal-content">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">Peringatan: Nama Sudah Terdaftar</h2>
+            <p class="text-base text-gray-600 mb-8">
+                Data ganda tidak diizinkan! Anda <strong>wajib mengedit data yang sudah ada</strong> atas nama: <br>
+                <span id="duplicateModalName" class="text-lg font-bold text-blue-700 bg-blue-50 px-3 py-1 rounded inline-block mt-2"></span>
+            </p>
+            <button type="button" id="btnEditDuplicate" class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition w-full">Ya, Buka dan Edit Data</button>
+        </div>
+    </div>
+
+    <!-- Modal Sukses Simpan & Cetak -->
+    <div id="successPrintModalOverlay" class="modal-overlay">
+        <div class="modal-content">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+                <span class="text-green-600 text-2xl">✓</span>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-900 mb-2">Data Berhasil Disimpan!</h2>
+            <p class="text-sm text-gray-600 mb-6">Pendaftar baru telah ditambahkan ke sistem.</p>
+            
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-6 text-left">
+                <p class="text-sm text-gray-500">Nama Pendaftar:</p>
+                <p id="successModalName" class="text-lg font-bold text-gray-800 mb-2"></p>
+                
+                <p class="text-sm text-gray-500">Nomor Pendaftaran:</p>
+                <p id="successModalNo" class="text-xl font-mono font-bold text-blue-700"></p>
+            </div>
+
+            <div class="flex gap-3">
+                <button type="button" id="btnCetakSuccess" class="flex-1 bg-blue-600 text-white font-semibold py-2.5 rounded-lg hover:bg-blue-700 transition">🖨️ Cetak Formulir</button>
+                <button type="button" onclick="document.getElementById('successPrintModalOverlay').classList.remove('active')" class="flex-1 bg-red-500 text-white font-semibold py-2.5 rounded-lg hover:bg-red-600 transition">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AREA CETAK 2 HALAMAN A4 (TERKUNCI PRESISI 1 HALAMAN) -->
     <div id="printArea" class="hidden">
         <div class="page-sheet">
             <div style="text-align: center; margin-bottom: 5px;">
@@ -320,6 +343,7 @@
                 <tr><td style="width: 5%; text-align: center;">1</td><td style="width: 33%;">Nomor Pendaftaran / NISN</td><td id="p_no_nisn"></td></tr>
                 <tr><td style="text-align: center;">2</td><td>Jurusan</td><td id="p_jurusan"></td></tr>
                 <tr><td style="text-align: center;">3</td><td>Jenis Pendaftaran</td><td id="p_jenis"></td></tr>
+                
                 <tr><td colspan="3" class="print-header-bg">DATA CALON MURID BARU</td></tr>
                 <tr><td style="text-align: center;">4</td><td>Nama Lengkap</td><td id="p_nama"></td></tr>
                 <tr><td style="text-align: center;">5</td><td>Tempat / Tanggal Lahir</td><td id="p_ttl"></td></tr>
@@ -327,12 +351,15 @@
                 <tr><td style="text-align: center;">7</td><td>Alamat</td><td id="p_alamat1"></td></tr>
                 <tr><td style="border-top: none; border-bottom: none;"></td><td style="border-top: none; border-bottom: none;"></td><td id="p_alamat2"></td></tr>
                 <tr><td style="text-align: center;">8</td><td>Nomor HP / Whatsapp</td><td id="p_hp_siswa"></td></tr>
+                
                 <tr><td colspan="3" class="print-header-bg">DATA ORANG TUA</td></tr>
                 <tr><td style="text-align: center;">9</td><td>Nama Ayah / Nama Ibu</td><td id="p_ortu"></td></tr>
                 <tr><td style="text-align: center;">10</td><td>Nomor HP / Whatsapp (Ortu)</td><td id="p_hp_ortu"></td></tr>
-                <tr><td colspan="3" class="print-header-bg">DATA PRESTASI (Terbaru dan Terbaik)</td></tr>
-                <tr><td style="text-align: center;">11</td><td>Jenjang Prestasi</td><td></td></tr>
-                <tr><td style="text-align: center;">12</td><td>Peringkat / Juara</td><td></td></tr>
+                
+                <tr><td colspan="3" class="print-header-bg">DATA PRESTASI</td></tr>
+                <tr><td style="text-align: center;">11</td><td>Jenjang Prestasi</td><td id="p_jenjang_prestasi"></td></tr>
+                <tr><td style="text-align: center;">12</td><td>Peringkat / Juara</td><td id="p_peringkat_juara"></td></tr>
+                
                 <tr><td colspan="3" class="print-header-bg">DATA LAINYA</td></tr>
                 <tr><td style="text-align: center;">13</td><td>Asal Sekolah</td><td id="p_sekolah"></td></tr>
             </table>
@@ -423,17 +450,17 @@
             <div class="dashed-divider"></div>
 
             <div class="half-page">
-                <img src="https://drive.google.com/uc?export=view&id=1SpyTxQzur32AjYNgbboaGxnjaEHRkOCS" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; opacity: 0.12; pointer-events: none; z-index: -1;">
+                <img src="https://lh3.googleusercontent.com/d/1SpyTxQzur32AjYNgbboaGxnjaEHRkOCS" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; opacity: 0.12; pointer-events: none; z-index: -1;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px;">
                     <div style="width: 25%;">
                         <div style="font-size: 11pt; margin-bottom: 5px;">Lembar 2<br><span style="font-weight: bold;">Untuk PANITIA</span></div>
-                        <img src="https://drive.google.com/uc?export=view&id=1BRFdBXyEP8owXLjOl0wUPDgsj7YuolQI" style="width: 65px; height: auto;">
+                        <img src="https://lh3.googleusercontent.com/d/1BRFdBXyEP8owXLjOl0wUPDgsj7YuolQI" style="width: 65px; height: auto;">
                     </div>
                     <div style="width: 50%; text-align: center; font-weight: bold; font-size: 11pt; line-height: 1.2; padding-top: 30px;">
                         FORMULIR PENDAFTARAN<br>CALON MURID BARU SMK PANCASILA 1 KUTOARJO<br>TAHUN PELAJARAN 2027/2028
                     </div>
                     <div style="width: 25%; text-align: right;">
-                        <img src="https://drive.google.com/uc?export=view&id=1cB3brK0UqWc0AZP9c_5X6O-oPKn1KuhG" style="height: 38px; margin-bottom: 5px;"><br>
+                        <img src="https://lh3.googleusercontent.com/d/1cB3brK0UqWc0AZP9c_5X6O-oPKn1KuhG" style="height: 38px; margin-bottom: 5px;"><br>
                         <span style="font-size: 10pt;">NOMOR PENDAFTARAN</span><br>
                         <span id="l2_no_daftar" style="font-size: 14pt; font-weight: bold;"></span>
                     </div>
@@ -473,18 +500,6 @@
         </div>
     </div>
 
-    <!-- Modal Peringatan Duplikat Nama -->
-    <div id="duplicateModalOverlay">
-        <div id="duplicateModalContent">
-            <h2 class="text-2xl font-bold text-gray-900 mb-4">Peringatan: Nama Sudah Terdaftar</h2>
-            <p class="text-base text-gray-600 mb-8">
-                Data ganda tidak diizinkan! Anda <strong>wajib mengedit data yang sudah ada</strong> atas nama: <br>
-                <span id="duplicateModalName" class="text-lg font-bold text-blue-700 bg-blue-50 px-3 py-1 rounded inline-block mt-2"></span>
-            </p>
-            <button type="button" id="btnEditDuplicate" class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition w-full">Ya, Buka dan Edit Data</button>
-        </div>
-    </div>
-
     <script>
         const SUPABASE_URL = 'https://ldkybpknxwtmgttwezbl.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_TM3B4XBbktJS_oGPRYYIgQ_x64yMCfG';
@@ -497,14 +512,12 @@
             input.addEventListener('input', function() { this.value = this.value.toUpperCase(); });
         });
 
-        // Memuat daftar SMP dari Supabase ke datalist dan menyertakan opsi LAINNYA
         async function muatDaftarSmp() {
             const datalist = document.getElementById('list_smp');
             const { data, error } = await supabaseClient.from('daftar_smp').select('nama_smp').order('nama_smp', { ascending: true });
             
             if (!error && data) {
                 daftarSmpGlobal = data.map(item => item.nama_smp);
-                // Tambahkan opsi LAINNYA ke dalam array pencarian
                 if (!daftarSmpGlobal.includes('LAINNYA')) {
                     daftarSmpGlobal.push('LAINNYA');
                 }
@@ -518,7 +531,6 @@
             }
         }
 
-        // Listener saat mengetik atau memilih di kolom 1 Asal Sekolah
         document.getElementById('asal_sekolah_input').addEventListener('input', function() {
             const val = this.value.trim().toUpperCase();
             const inputManual = document.getElementById('asal_sekolah_manual');
@@ -538,7 +550,6 @@
             }
         });
 
-        // Validasi Umur
         document.getElementById('tgl_lahir').addEventListener('change', function() { hitungDanValidasiUmur(this.value); });
         function hitungDanValidasiUmur(tglLahirStr) {
             const ketUmur = document.getElementById('keterangan_umur');
@@ -573,12 +584,15 @@
             }
         }
         
-        document.getElementById('btnEditDuplicate').onclick = function() {
-            if (foundDuplicateData) {
-                populateFormWithData(foundDuplicateData);
-                document.getElementById('duplicateModalOverlay').classList.remove('active');
-            }
-        };
+        const btnEditDuplicate = document.getElementById('btnEditDuplicate');
+        if (btnEditDuplicate) {
+            btnEditDuplicate.onclick = function() {
+                if (foundDuplicateData) {
+                    populateFormWithData(foundDuplicateData);
+                    document.getElementById('duplicateModalOverlay').classList.remove('active');
+                }
+            };
+        }
 
         async function generateNomorPendaftaranBaru() {
             const { data } = await supabaseClient.from('pendaftar')
@@ -633,6 +647,9 @@
                 input2.classList.add('bg-gray-100');
                 input2.value = '';
             }
+
+            document.getElementById('jenjang_prestasi').value = data.jenjang_prestasi || '';
+            document.getElementById('peringkat_juara').value = data.peringkat_juara || '';
 
             document.getElementById('alamat').value = data.alamat || '';
             document.getElementById('rt').value = data.rt || '';
@@ -691,7 +708,7 @@
                     <td class="p-3 font-bold">${row.nama}</td>
                     <td class="p-3 text-xs">${row.jurusan || '-'}</td>
                     <td class="p-3 text-center">
-                        <button onclick='cetakDataLangsung(${JSON.stringify(row).replace(/'/g, "\\'")})' class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded text-xs font-semibold shadow transition">
+                        <button onclick='cetakDataLangsung(${JSON.stringify(row).replace(/'/g, "\\'")})' class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-xs font-semibold shadow transition">
                             🖨️ Cetak Form
                         </button>
                     </td>
@@ -747,6 +764,10 @@
             document.getElementById('p_hp_siswa').innerText = payload.hp_siswa || '-';
             document.getElementById('p_ortu').innerText = ortuTabelH1;
             document.getElementById('p_hp_ortu').innerText = payload.hp_ortu || '-';
+            
+            document.getElementById('p_jenjang_prestasi').innerText = payload.jenjang_prestasi || '';
+            document.getElementById('p_peringkat_juara').innerText = payload.peringkat_juara || '';
+
             document.getElementById('p_sekolah').innerText = payload.asal_sekolah || '-';
             
             const wrapperReferral = document.getElementById('wrapper_referral');
@@ -774,7 +795,6 @@
             setTimeout(() => window.print(), 400);
         }
 
-        // Simpan Data dengan Validasi Lengkap & Normalisasi SMP
         document.getElementById('formPendaftaran').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -790,7 +810,6 @@
                 document.getElementById('display_no_daftar').innerText = noDaftar;
             }
 
-            // Pengolahan Asal Sekolah
             const valInput1 = document.getElementById('asal_sekolah_input').value.trim().toUpperCase();
             let finalAsalSekolah = "";
 
@@ -809,7 +828,6 @@
                 }
                 finalAsalSekolah = valInput2.replace(/\s+/g, ' ');
 
-                // Cek apakah sudah ada di database untuk mencegah double data
                 const { data: existingSmp } = await supabaseClient
                     .from('daftar_smp')
                     .select('*')
@@ -836,6 +854,8 @@
                 jk: document.getElementById('jk').value,
                 agama: document.getElementById('agama').value,
                 asal_sekolah: finalAsalSekolah,
+                jenjang_prestasi: document.getElementById('jenjang_prestasi').value,
+                peringkat_juara: document.getElementById('peringkat_juara').value,
                 alamat: document.getElementById('alamat').value,
                 rt: document.getElementById('rt').value,
                 rw: document.getElementById('rw').value,
@@ -859,7 +879,18 @@
                 alert("Gagal menyimpan ke database Supabase: " + error.message); console.error(error); return; 
             }
 
-            alert("Data pendaftaran berhasil disimpan/diperbarui dengan No. Pendaftaran: " + noDaftar);
+            // Tampilkan Modal Sukses (Ganti Alert standar)
+            document.getElementById('successModalName').innerText = payload.nama;
+            document.getElementById('successModalNo').innerText = noDaftar;
+            
+            const btnCetakSuccess = document.getElementById('btnCetakSuccess');
+            btnCetakSuccess.onclick = function() {
+                cetakDataLangsung(payload);
+            };
+
+            document.getElementById('successPrintModalOverlay').classList.add('active');
+
+            // Reset Form
             document.getElementById('formPendaftaran').reset();
             const input2 = document.getElementById('asal_sekolah_manual');
             input2.disabled = true;
