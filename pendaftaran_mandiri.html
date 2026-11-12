@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pendaftaran Mandiri - Calon Peserta Didik Baru</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .uppercase-input { text-transform: uppercase; }
+        
+        /* Style Modal Elegan & Smooth */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px);
+            z-index: 1000; justify-content: center; align-items: center;
+        }
+        .modal-content {
+            background-color: white; padding: 2.5rem; border-radius: 1rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); 
+            max-width: 90%; width: 500px; text-align: left;
+            animation: scaleIn 0.25s ease-in-out forwards;
+        }
+        .modal-overlay.active { display: flex; }
+
+        @keyframes scaleIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen text-gray-800 font-sans p-4 md:p-6 flex items-center justify-center">
+
+    <div class="max-w-xl w-full bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+        <!-- HEADER -->
+        <div class="bg-blue-700 text-white p-6 text-center">
+            <h1 class="text-2xl font-bold">Pendaftaran Mandiri SPMB</h1>
+            <p class="text-blue-100 text-sm mt-1">SMK Pancasila 1 Kutoarjo Tahun Ajaran 2027/2028</p>
+        </div>
+
+        <!-- FORM PENDAFTARAN DASAR -->
+        <form id="formPendaftaranMandiri" class="p-6 md:p-8 space-y-5">
+            <div>
+                <label class="block text-sm font-semibold mb-1 text-gray-700">Nama Lengkap <span class="text-red-500">*</span></label>
+                <input type="text" id="nama" class="w-full border border-gray-300 p-3 rounded-lg uppercase-input focus:ring-2 focus:ring-blue-500 outline-none text-sm" placeholder="Masukkan nama lengkap Anda..." required autocomplete="off">
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold mb-1 text-gray-700">Tempat Lahir <span class="text-red-500">*</span></label>
+                    <input type="text" id="tempat_lahir" class="w-full border border-gray-300 p-3 rounded-lg uppercase-input focus:ring-2 focus:ring-blue-500 outline-none text-sm" placeholder="Contoh: KUTOARJO" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1 text-gray-700">Tanggal Lahir <span class="text-red-500">*</span></label>
+                    <input type="date" id="tgl_lahir" class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white" required>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold mb-1 text-gray-700">Jenis Kelamin <span class="text-red-500">*</span></label>
+                    <select id="jk" class="w-full border border-gray-300 p-3 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 outline-none text-sm" required>
+                        <option value="">-- Pilih Jenis Kelamin --</option>
+                        <option value="Laki-laki">Laki-laki</option>
+                        <option value="Perempuan">Perempuan</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1 text-gray-700">Jurusan Pilihan <span class="text-red-500">*</span></label>
+                    <select id="jurusan" class="w-full border border-gray-300 p-3 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 outline-none text-sm" required>
+                        <option value="">-- Pilih Jurusan Pilihan --</option>
+                        <option value="Teknik Otomotif (Kendaraan Ringan)">Teknik Otomotif (Kendaraan Ringan)</option>
+                        <option value="Teknik Otomotif (Sepeda Motor)">Teknik Otomotif (Sepeda Motor)</option>
+                        <option value="Teknik Pengelasan dan Fabrikasi Logam (TPFL)">Teknik Pengelasan dan Fabrikasi Logam (TPFL)</option>
+                        <option value="Teknik Jaringan Komputer dan Telekomunikasi (TJKT)">Teknik Jaringan Komputer dan Telekomunikasi (TJKT)</option>
+                        <option value="Teknik Mesin (TM)">Teknik Mesin (TM)</option>
+                        <option value="Layanan Kesehatan (Lkes)">Layanan Kesehatan (Lkes)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold mb-1 text-gray-700">No. HP / WhatsApp (Aktif) <span class="text-red-500">*</span></label>
+                <input type="tel" id="hp_siswa" class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" placeholder="Contoh: 081234567890" required>
+            </div>
+
+            <div class="pt-4">
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-lg shadow-md transition text-base">
+                    Kirim Pendaftaran Mandiri
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- MODAL NOTIFIKASI SUKSES & PERSYARATAN -->
+    <div id="modalNotifikasi" class="modal-overlay">
+        <div class="modal-content">
+            <div class="text-center mb-4">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-2">
+                    <span class="text-green-600 text-2xl font-bold">✓</span>
+                </div>
+                <h2 class="text-xl font-bold text-gray-900">Pendaftaran Berhasil!</h2>
+                <p class="text-xs text-gray-500 mt-0.5">Silakan simpan nomor pendaftaran Anda.</p>
+            </div>
+
+            <div class="bg-blue-50 p-3.5 rounded-lg border border-blue-100 mb-3 text-sm space-y-1">
+                <div><span class="text-gray-500 text-xs">Nomor Pendaftaran:</span> <br><strong id="notif_no_daftar" class="text-blue-700 text-lg font-mono"></strong></div>
+                <div><span class="text-gray-500 text-xs">Nama Lengkap:</span> <br><strong id="notif_nama" class="text-gray-800"></strong></div>
+            </div>
+
+            <div class="bg-gray-50 p-3.5 rounded-lg border border-gray-200 mb-3 text-xs text-gray-700 space-y-1.5">
+                <p class="font-bold text-gray-900">📌 Berkas yang Perlu Dibawa:</p>
+                <ol class="list-decimal list-inside space-y-0.5 pl-1">
+                    <li>Akta Kelahiran (Asli / Fotokopi Legalisir)</li>
+                    <li>Kartu Keluarga (KK)</li>
+                    <li>PIP / KIP (Jika ada)</li>
+                    <li>Pas Foto 3x4 (2 lembar)</li>
+                </ol>
+            </div>
+
+            <!-- Teks Instruksi Kapital yang Ringkas -->
+            <div class="bg-blue-600 text-white p-2.5 rounded-lg text-center font-bold text-xs mb-4 tracking-wider uppercase">
+                SCREENSHOT HALAMAN INI DAN DATANG KE SMK PANCASILA 1 KUTOARJO
+            </div>
+
+            <button type="button" onclick="tutupModalDanReset('modalNotifikasi')" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-semibold py-2.5 rounded-lg transition text-sm shadow">
+                Selesai / Tutup
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL PERINGATAN: SUDAH TERDAFTAR SEBELUMNYA -->
+    <div id="modalSudahTerdaftar" class="modal-overlay">
+        <div class="modal-content">
+            <div class="text-center mb-4">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-orange-100 mb-2">
+                    <span class="text-orange-600 text-2xl font-bold">!</span>
+                </div>
+                <h2 class="text-xl font-bold text-gray-900">Anda Sudah Terdaftar!</h2>
+                <p class="text-xs text-gray-500 mt-0.5">Sistem mendeteksi data Anda sudah terdaftar sebelumnya.</p>
+            </div>
+
+            <div class="bg-orange-50 p-3.5 rounded-lg border border-orange-100 mb-4 text-sm space-y-1">
+                <div><span class="text-gray-500 text-xs">Nomor Pendaftaran Anda:</span> <br><strong id="exist_no_daftar" class="text-orange-700 text-lg font-mono"></strong></div>
+                <div><span class="text-gray-500 text-xs">Nama Lengkap:</span> <br><strong id="exist_nama" class="text-gray-800"></strong></div>
+                <div><span class="text-gray-500 text-xs">Jurusan Pilihan:</span> <br><strong id="exist_jurusan" class="text-gray-800"></strong></div>
+            </div>
+
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-5 text-xs text-gray-700 space-y-2">
+                <p class="font-bold text-gray-900 mb-1">📌 Catatan:</p>
+                <p>Anda tidak perlu melakukan pendaftaran ulang. Silakan bawa berkas persyaratan ke sekolah dengan menunjukkan Nomor Pendaftaran di atas.</p>
+            </div>
+
+            <button type="button" onclick="tutupModalDanReset('modalSudahTerdaftar')" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2.5 rounded-lg transition text-sm shadow">
+                Mengerti / Tutup
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://ldkybpknxwtmgttwezbl.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_TM3B4XBbktJS_oGPRYYIgQ_x64yMCfG';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        document.querySelectorAll('.uppercase-input').forEach(input => {
+            input.addEventListener('input', function() { this.value = this.value.toUpperCase(); });
+        });
+
+        async function generateNomorPendaftaranBaru() {
+            const { data } = await supabaseClient.from('pendaftar')
+                .select('no_pendaftaran')
+                .like('no_pendaftaran', '27%')
+                .order('no_pendaftaran', { ascending: false })
+                .limit(1)
+                .maybeSingle();
+            
+            let noBaru = "27001";
+            if (data && data.no_pendaftaran) {
+                let urutanTerakhir = parseInt(data.no_pendaftaran.substring(2));
+                let urutanBaru = urutanTerakhir + 1;
+                noBaru = "27" + String(urutanBaru).padStart(3, '0');
+            }
+            return noBaru;
+        }
+
+        document.getElementById('formPendaftaranMandiri').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const nama = document.getElementById('nama').value.trim().toUpperCase();
+            const tempatLahir = document.getElementById('tempat_lahir').value.trim().toUpperCase();
+            const tglLahir = document.getElementById('tgl_lahir').value;
+            const jk = document.getElementById('jk').value;
+            const jurusan = document.getElementById('jurusan').value;
+            const hpSiswa = document.getElementById('hp_siswa').value.trim();
+
+            if (!nama || !tempatLahir || !tglLahir || !jk || !jurusan || !hpSiswa) {
+                alert("Semua kolom bertanda bintang (*) wajib diisi!");
+                return;
+            }
+
+            const { data: existingData, error: checkError } = await supabaseClient
+                .from('pendaftar')
+                .select('*')
+                .eq('nama', nama)
+                .eq('tgl_lahir', tglLahir)
+                .maybeSingle();
+
+            if (checkError) {
+                console.error("Gagal memeriksa duplikasi data:", checkError);
+            }
+
+            if (existingData) {
+                document.getElementById('exist_no_daftar').innerText = existingData.no_pendaftaran || '-';
+                document.getElementById('exist_nama').innerText = existingData.nama || nama;
+                document.getElementById('exist_jurusan').innerText = existingData.jurusan || jurusan;
+                document.getElementById('modalSudahTerdaftar').classList.add('active');
+                return;
+            }
+
+            const tglClean = tglLahir.replace(/-/g, '');
+            const nisnOtomatis = `MANDIRI_${nama.replace(/\s+/g, '')}_${tglClean}`;
+
+            const noDaftar = await generateNomorPendaftaranBaru();
+
+            const payload = {
+                no_pendaftaran: noDaftar,
+                nisn: nisnOtomatis,
+                nama: nama,
+                tempat_lahir: tempatLahir,
+                tgl_lahir: tglLahir,
+                jk: jk,
+                jurusan: jurusan,
+                hp_siswa: hpSiswa,
+                jenis_pendaftar: 'Siswa Baru'
+            };
+
+            const { error } = await supabaseClient.from('pendaftar').insert(payload);
+
+            if (error) {
+                alert("Gagal mengirim pendaftaran: " + error.message);
+                console.error(error);
+                return;
+            }
+
+            document.getElementById('notif_no_daftar').innerText = noDaftar;
+            document.getElementById('notif_nama').innerText = nama;
+            document.getElementById('modalNotifikasi').classList.add('active');
+        });
+
+        function tutupModalDanReset(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+            if (modalId === 'modalNotifikasi') {
+                document.getElementById('formPendaftaranMandiri').reset();
+            }
+        }
+    </script>
+</body>
+</html>

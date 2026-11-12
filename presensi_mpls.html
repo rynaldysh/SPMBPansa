@@ -110,14 +110,17 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let cacheDataMpls = [];
+        let selectedPendaftarSet = new Set(); // Menyimpan daftar centang secara aman
 
         async function refreshDataServer() {
             cacheDataMpls = [];
+            selectedPendaftarSet.clear();
             document.getElementById('select_all').checked = false;
             await muatDataMpls(true);
         }
 
         async function muatDataMpls(isRefresh = false) {
+            simpanStatusCentangAktif();
             const tbody = document.getElementById('tabel_mpls');
             
             if (cacheDataMpls.length === 0) {
@@ -152,7 +155,6 @@
             let totalTidakHadir = 0;
 
             filteredData.forEach(p => {
-                // Jika BELUM DITERIMA, pastikan status kehadiran otomatis TIDAK HADIR
                 if (p.aksi !== 'DITERIMA') {
                     p.hadir_mpls = 'TIDAK HADIR';
                 } else {
@@ -189,12 +191,12 @@
                 const isHadir = p.hadir_mpls === 'HADIR';
                 const selectColorClass = isHadir ? 'bg-green-950 text-green-300 border-green-600 font-bold' : 'bg-red-950 text-red-300 border-red-600 font-bold';
 
-                // Jika tidak diterima, checkbox dinonaktifkan agar tidak bisa dipilih untuk aksi massal hadir
                 const checkboxDisabled = !isDiterima ? 'disabled' : '';
+                const isChecked = selectedPendaftarSet.has(identifier) ? 'checked' : '';
 
                 tr.innerHTML = `
                     <td class="p-3.5 text-center">
-                        <input type="checkbox" value="${identifier}" onclick="updateCounterTerpilih()" class="row-checkbox w-4 h-4 rounded accent-emerald-500 cursor-pointer" ${checkboxDisabled}>
+                        <input type="checkbox" value="${identifier}" onclick="tandaiCheckbox(this)" class="row-checkbox w-4 h-4 rounded accent-emerald-500 cursor-pointer" ${checkboxDisabled} ${isChecked}>
                     </td>
                     <td class="p-3.5 font-mono font-bold text-indigo-400">${p.no_pendaftaran || '-'}</td>
                     <td class="p-3.5 font-bold text-white">${p.nama || '-'}</td>
@@ -217,28 +219,51 @@
             updateCounterTerpilih();
         }
 
+        function simpanStatusCentangAktif() {
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            checkboxes.forEach(cb => {
+                if (cb.checked) {
+                    selectedPendaftarSet.add(cb.value);
+                } else {
+                    selectedPendaftarSet.delete(cb.value);
+                }
+            });
+        }
+
+        function tandaiCheckbox(cb) {
+            if (cb.checked) {
+                selectedPendaftarSet.add(cb.value);
+            } else {
+                selectedPendaftarSet.delete(cb.value);
+            }
+            updateCounterTerpilih();
+        }
+
         function toggleSelectAll(masterCheckbox) {
-            // Hanya mencentang checkbox siswa yang DITERIMA
             const checkboxes = document.querySelectorAll('.row-checkbox:not(:disabled)');
-            checkboxes.forEach(cb => cb.checked = masterCheckbox.checked);
+            checkboxes.forEach(cb => {
+                cb.checked = masterCheckbox.checked;
+                if (masterCheckbox.checked) {
+                    selectedPendaftarSet.add(cb.value);
+                } else {
+                    selectedPendaftarSet.delete(cb.value);
+                }
+            });
             updateCounterTerpilih();
         }
 
         function updateCounterTerpilih() {
-            const checkboxes = document.querySelectorAll('.row-checkbox:checked');
-            document.getElementById('info_terpilih').innerText = `${checkboxes.length} siswa dipilih`;
+            document.getElementById('info_terpilih').innerText = `${selectedPendaftarSet.size} siswa dipilih`;
         }
 
         async function ubahMassal(statusBaru) {
-            const checkboxes = document.querySelectorAll('.row-checkbox:checked');
-            if (checkboxes.length === 0) {
+            if (selectedPendaftarSet.size === 0) {
                 alert("Silakan centang setidaknya satu siswa yang DITERIMA pada tabel terlebih dahulu!");
                 return;
             }
 
             if (statusBaru === 'HADIR') {
-                // Pastikan ganda validasi status DITERIMA
-                const listNoPendaftaran = Array.from(checkboxes).map(cb => cb.value);
+                const listNoPendaftaran = Array.from(selectedPendaftarSet);
                 const invalidCheck = cacheDataMpls.some(p => listNoPendaftaran.includes(p.no_pendaftaran) && p.aksi !== 'DITERIMA');
                 if (invalidCheck) {
                     alert("Peringatan: Terdapat siswa dengan status belum diterima di antara pilihan Anda!");
@@ -246,11 +271,11 @@
                 }
             }
 
-            if (!confirm(`Yakin ingin mengubah status ${checkboxes.length} siswa terpilih menjadi ${statusBaru}?`)) {
+            if (!confirm(`Yakin ingin mengubah status ${selectedPendaftarSet.size} siswa terpilih menjadi ${statusBaru}?`)) {
                 return;
             }
 
-            const listNoPendaftaran = Array.from(checkboxes).map(cb => cb.value);
+            const listNoPendaftaran = Array.from(selectedPendaftarSet);
 
             const { error } = await supabaseClient
                 .from('pendaftar')
@@ -270,7 +295,10 @@
                 }
             });
 
-            alert(`Berhasil memperbarui ${checkboxes.length} data siswa menjadi ${statusBaru}!`);
+            alert(`Berhasil memperbarui ${selectedPendaftarSet.size} data siswa menjadi ${statusBaru}!`);
+            
+            selectedPendaftarSet.clear();
+            document.getElementById('select_all').checked = false;
             muatDataMpls();
         }
 
@@ -311,6 +339,8 @@
             if (siswaData) {
                 siswaData.hadir_mpls = statusMpls;
             }
+
+            selectedPendaftarSet.delete(noPendaftaran);
 
             alert("Status kehadiran MPLS berhasil diperbarui!");
             muatDataMpls();
