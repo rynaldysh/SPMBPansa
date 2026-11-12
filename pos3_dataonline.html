@@ -123,28 +123,36 @@
                                 </div>
                                 <div>
                                     <label class="block text-xs font-bold mb-1 text-gray-700">1. NIK Murid <span class="text-red-500">*</span></label>
-                                    <input type="text" id="nik_siswa" class="w-full border border-gray-300 px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none transition text-base" placeholder="16 Digit NIK" maxlength="16" required>
+                                    <input type="text" id="nik_murid" class="w-full border border-gray-300 px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none transition text-base" placeholder="16 Digit NIK" maxlength="16" required>
                                 </div>
                             </div>
 
+                            <!-- Anak ke- & Berapa Bersaudara (Nomor 2 & 3) -->
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                 <div>
                                     <label class="block text-xs font-bold mb-1 text-gray-700">2. Anak ke- <span class="text-red-500">*</span></label>
                                     <input type="number" id="anak_ke" class="w-full border border-gray-300 px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none transition text-base" placeholder="Cth: 2" required>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-bold mb-1 text-gray-700">3. Nomor PIP / KIP (Jika Ada)</label>
-                                    <input type="text" id="no_kip" class="w-full border border-gray-300 px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none transition uppercase-input text-base" placeholder="Nomor KIP/PIP">
+                                    <label class="block text-xs font-bold mb-1 text-gray-700">3. Berapa Bersaudara <span class="text-red-500">*</span></label>
+                                    <input type="number" id="jml_saudara" class="w-full border border-gray-300 px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none transition text-base" placeholder="Cth: 3" required>
                                 </div>
                             </div>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                 <div>
-                                    <label class="block text-xs font-bold mb-1 text-gray-700">4. No Registrasi Akta Kelahiran</label>
-                                    <input type="text" id="no_akta" class="w-full border border-gray-300 px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none transition uppercase-input text-base" placeholder="Nomor Akta">
+                                    <label class="block text-xs font-bold mb-1 text-gray-700">4. Nomor PIP / KIP (Jika Ada)</label>
+                                    <input type="text" id="no_pip" class="w-full border border-gray-300 px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none transition uppercase-input text-base" placeholder="Nomor KIP/PIP">
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-bold mb-1 text-gray-700">5. Golongan Darah</label>
+                                    <label class="block text-xs font-bold mb-1 text-gray-700">5. No Registrasi Akta Kelahiran</label>
+                                    <input type="text" id="no_akta" class="w-full border border-gray-300 px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none transition uppercase-input text-base" placeholder="Nomor Akta">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-xs font-bold mb-1 text-gray-700">6. Golongan Darah</label>
                                     <select id="gol_darah" class="w-full border border-gray-300 px-3 py-2 rounded-md bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition text-base cursor-pointer">
                                         <option value="">- Pilih -</option>
                                         <option value="A">A</option>
@@ -154,33 +162,30 @@
                                         <option value="Belum Tahu">Belum Tahu</option>
                                     </select>
                                 </div>
-                            </div>
-
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                 <div>
-                                    <label class="block text-xs font-bold mb-1 text-gray-700">6. Tinggi Badan (cm) <span class="text-red-500">*</span></label>
+                                    <label class="block text-xs font-bold mb-1 text-gray-700">7. Tinggi Badan (cm) <span class="text-red-500">*</span></label>
                                     <input type="number" id="tinggi_badan" class="w-full border border-gray-300 px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none transition text-base" placeholder="Cth: 165" required>
                                 </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                 <div>
-                                    <label class="block text-xs font-bold mb-1 text-gray-700">7. Berat Badan (kg) <span class="text-red-500">*</span></label>
+                                    <label class="block text-xs font-bold mb-1 text-gray-700">8. Berat Badan (kg) <span class="text-red-500">*</span></label>
                                     <input type="number" id="berat_badan" class="w-full border border-gray-300 px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none transition text-base" placeholder="Cth: 55" required>
                                 </div>
-                            </div>
-
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                 <div>
-                                    <label class="block text-xs font-bold mb-1 text-gray-700">8. Lingkar Kepala (cm) <span class="text-red-500">*</span></label>
+                                    <label class="block text-xs font-bold mb-1 text-gray-700">9. Lingkar Kepala (cm) <span class="text-red-500">*</span></label>
                                     <input type="number" id="lingkar_kepala" class="w-full border border-gray-300 px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none transition text-base" placeholder="Cth: 56" required>
                                 </div>
-                                <div>
-                                    <label class="block text-xs font-bold mb-1 text-gray-700">9. Waktu dari Rumah ke Sekolah (menit)</label>
-                                    <input type="number" id="waktu_tempuh" class="w-full border border-gray-300 px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none transition text-base" placeholder="Cth: 30">
-                                </div>
                             </div>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                 <div>
-                                    <label class="block text-xs font-bold mb-1 text-gray-700">10. Jenis Tinggal</label>
+                                    <label class="block text-xs font-bold mb-1 text-gray-700">10. Waktu dari Rumah ke Sekolah (menit)</label>
+                                    <input type="number" id="waktu_tempuh" class="w-full border border-gray-300 px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none transition text-base" placeholder="Cth: 30">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold mb-1 text-gray-700">11. Jenis Tinggal</label>
                                     <select id="jenis_tinggal" class="w-full border border-gray-300 px-3 py-2 rounded-md bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition text-base cursor-pointer">
                                         <option value="Bersama Orang Tua">Bersama Orang Tua</option>
                                         <option value="Wali">Wali</option>
@@ -189,8 +194,11 @@
                                         <option value="Panti Asuhan">Panti Asuhan</option>
                                     </select>
                                 </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label class="block text-xs font-bold mb-1 text-gray-700">11. Transportasi ke Sekolah</label>
+                                    <label class="block text-xs font-bold mb-1 text-gray-700">12. Transportasi ke Sekolah</label>
                                     <select id="transportasi" class="w-full border border-gray-300 px-3 py-2 rounded-md bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition text-base cursor-pointer">
                                         <option value="Sepeda Motor">Sepeda Motor</option>
                                         <option value="Jalan Kaki">Jalan Kaki</option>
@@ -200,16 +208,9 @@
                                         <option value="Kereta Api">Kereta Api</option>
                                     </select>
                                 </div>
-                            </div>
-
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label class="block text-xs font-bold mb-1 text-gray-700">12. Jumlah Saudara Kandung</label>
-                                    <input type="number" id="jml_saudara" class="w-full border border-gray-300 px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none transition text-base" placeholder="0">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-bold mb-1 text-gray-700">13. Penyakit Bawaan / Riwayat Kesehatan</label>
-                                    <input type="text" id="penyakit" class="w-full border border-gray-300 px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none transition uppercase-input text-base" placeholder="TIDAK ADA / TULISKAN JIKA ADA">
+                                    <label class="block text-xs font-bold mb-1 text-gray-700">13. Penyakit Bawaan / Riwayat Kesehatan<span class="text-red-500">*</span></label>
+                                    <input type="text" id="penyakit_bawaan" class="w-full border border-gray-300 px-3 py-2 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none transition uppercase-input text-base" placeholder="TIDAK ADA / TULISKAN JIKA ADA" required>
                                 </div>
                             </div>
                         </div>
@@ -460,9 +461,10 @@
 
             // --- A. Kependudukan & Fisik Siswa ---
             document.getElementById('nama_ro').value = data.nama || '';
-            document.getElementById('nik_siswa').value = data.nik_siswa || '';
+            document.getElementById('nik_murid').value = data.nik_murid || '';
             document.getElementById('anak_ke').value = data.anak_ke || '';
-            document.getElementById('no_kip').value = data.no_kip || '';
+            document.getElementById('jml_saudara').value = data.jml_saudara || '';
+            document.getElementById('no_pip').value = data.no_pip || '';
             document.getElementById('no_akta').value = data.no_akta || '';
             document.getElementById('gol_darah').value = data.gol_darah || '';
             document.getElementById('tinggi_badan').value = data.tinggi_badan || '';
@@ -471,8 +473,7 @@
             document.getElementById('waktu_tempuh').value = data.waktu_tempuh || '';
             document.getElementById('jenis_tinggal').value = data.jenis_tinggal || 'Bersama Orang Tua';
             document.getElementById('transportasi').value = data.transportasi || 'Sepeda Motor';
-            document.getElementById('jml_saudara').value = data.jml_saudara || '';
-            document.getElementById('penyakit').value = data.penyakit || '';
+            document.getElementById('penyakit_bawaan').value = data.penyakit_bawaan || '';
 
             // --- B. Data Orang Tua ---
             document.getElementById('nama_ayah_ro').value = data.nama_ayah || '';
@@ -524,9 +525,10 @@
 
             const payloadUpdate = {
                 // A
-                nik_siswa: document.getElementById('nik_siswa').value,
+                nik_murid: document.getElementById('nik_murid').value,
                 anak_ke: document.getElementById('anak_ke').value,
-                no_kip: document.getElementById('no_kip').value,
+                jml_saudara: document.getElementById('jml_saudara').value,
+                no_pip: document.getElementById('no_pip').value,
                 no_akta: document.getElementById('no_akta').value,
                 gol_darah: document.getElementById('gol_darah').value,
                 tinggi_badan: document.getElementById('tinggi_badan').value,
@@ -535,8 +537,7 @@
                 waktu_tempuh: document.getElementById('waktu_tempuh').value,
                 jenis_tinggal: document.getElementById('jenis_tinggal').value,
                 transportasi: document.getElementById('transportasi').value,
-                jml_saudara: document.getElementById('jml_saudara').value,
-                penyakit: document.getElementById('penyakit').value,
+                penyakit_bawaan: document.getElementById('penyakit_bawaan').value,
                 
                 // B Ayah
                 nik_ayah: document.getElementById('nik_ayah').value,
