@@ -31,6 +31,25 @@
             background-color: #ffffff;
             color: #1f2937;
         }
+
+        /* Style Modal Elegan & Smooth */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px);
+            z-index: 1000; justify-content: center; align-items: center;
+        }
+        .modal-content {
+            background-color: white; padding: 2.5rem; border-radius: 1rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); 
+            max-width: 90%; width: 450px; text-align: center;
+            animation: scaleIn 0.25s ease-in-out forwards;
+        }
+        .modal-overlay.active { display: flex; }
+
+        @keyframes scaleIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen text-gray-800 font-sans p-4 md:p-6">
@@ -49,7 +68,7 @@
         <div class="bg-white p-4 rounded-lg shadow-md flex flex-wrap justify-between items-center gap-4">
             <div class="flex flex-wrap items-center gap-3 w-full md:w-auto flex-grow">
                 <div class="w-full md:w-72">
-                    <input type="text" id="cari_keyword" oninput="muatDataVerifikasi()" placeholder="🔍 Cari Nama / No. Pendaftaran..." class="w-full bg-gray-50 border border-gray-300 text-gray-800 px-3 py-2 rounded-md text-sm outline-none focus:ring-2 focus:ring-red-500 uppercase-input">
+                    <input type="text" id="cari_keyword" oninput="gantiKeywordCari()" placeholder="🔍 Cari Nama / No. Pendaftaran..." class="w-full bg-gray-50 border border-gray-300 text-gray-800 px-3 py-2 rounded-md text-sm outline-none focus:ring-2 focus:ring-red-500 uppercase-input">
                 </div>
             </div>
 
@@ -69,7 +88,7 @@
                 <select id="nilai_massal" class="border border-gray-300 px-2 py-1.5 rounded text-xs bg-white">
                     <option value="">-- Pilih Kolom Dulu --</option>
                 </select>
-                <button onclick="terapkanAksiMassal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded text-xs font-bold shadow transition">
+                <button onclick="konfirmasiAksiMassal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded text-xs font-bold shadow transition">
                     ⚡ Terapkan Terpilih
                 </button>
                 <button onclick="muatDataVerifikasi()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1.5 rounded text-xs font-semibold transition">
@@ -108,8 +127,55 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- PAGINATION / NAVIGASI HALAMAN -->
+            <div class="bg-gray-50 px-4 py-3 border-t border-gray-200 flex flex-wrap justify-between items-center gap-4">
+                <div class="text-xs text-gray-600" id="info_halaman">
+                    Menampilkan 0 dari 0 data
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="ubahHalaman(-1)" id="btnPrev" class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 px-3 py-1.5 rounded text-xs font-semibold shadow-sm transition disabled:opacity-40 disabled:cursor-not-allowed">
+                        ◀ Sebelumnya
+                    </button>
+                    <span class="text-xs font-bold text-gray-700 px-2" id="teks_halaman">Hal 1 dari 1</span>
+                    <button onclick="ubahHalaman(1)" id="btnNext" class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 px-3 py-1.5 rounded text-xs font-semibold shadow-sm transition disabled:opacity-40 disabled:cursor-not-allowed">
+                        Berikutnya ▶
+                    </button>
+                </div>
+            </div>
         </div>
         <div class="text-xs text-gray-500 italic">* Catatan: Pilihan nilai pada aksi massal akan otomatis menyesuaikan dengan kolom yang Anda pilih di atasnya.</div>
+    </div>
+
+    <!-- Modal Konfirmasi Aksi Massal -->
+    <div id="modalKonfirmasi" class="modal-overlay">
+        <div class="modal-content">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100 mb-4">
+                <span class="text-indigo-600 text-2xl font-bold">?</span>
+            </div>
+            <h2 class="text-xl font-bold text-gray-900 mb-2">Konfirmasi Perubahan Massal</h2>
+            <p class="text-sm text-gray-600 mb-6" id="pesanKonfirmasi">
+                Apakah Anda yakin ingin mengubah data?
+            </p>
+            <div class="flex gap-3">
+                <button type="button" onclick="tutupModal('modalKonfirmasi')" class="flex-1 bg-gray-200 text-gray-700 font-semibold py-2.5 rounded-lg hover:bg-gray-300 transition">Batal</button>
+                <button type="button" id="btnEksekusiMassal" class="flex-1 bg-indigo-600 text-white font-semibold py-2.5 rounded-lg hover:bg-indigo-700 transition">Ya, Ubah Data</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Notifikasi Sukses -->
+    <div id="modalSukses" class="modal-overlay">
+        <div class="modal-content">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+                <span class="text-green-600 text-2xl font-bold">✓</span>
+            </div>
+            <h2 class="text-xl font-bold text-gray-900 mb-2">Berhasil Diubah!</h2>
+            <p class="text-sm text-gray-600 mb-6" id="pesanSukses">
+                Sejumlah data berhasil diperbarui.
+            </p>
+            <button type="button" onclick="tutupModal('modalSukses'); muatDataVerifikasi();" class="w-full bg-indigo-600 text-white font-semibold py-2.5 rounded-lg hover:bg-indigo-700 transition">Tutup</button>
+        </div>
     </div>
 
     <script>
@@ -118,6 +184,8 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let globalDataList = [];
+        let halamanAktif = 1;
+        const dataPerHalaman = 10;
 
         async function muatDataVerifikasi() {
             const keyword = document.getElementById('cari_keyword').value.trim().toUpperCase();
@@ -141,15 +209,44 @@
             }
 
             globalDataList = filteredData;
+            renderTabelHalaman();
+        }
+
+        function gantiKeywordCari() {
+            halamanAktif = 1; // Reset ke halaman 1 saat mengetik pencarian
+            muatDataVerifikasi();
+        }
+
+        function renderTabelHalaman() {
+            const tbody = document.getElementById('tabel_pendaftar');
+            const totalData = globalDataList.length;
+            const totalHalaman = Math.ceil(totalData / dataPerHalaman) || 1;
+
+            if (halamanAktif > totalHalaman) halamanAktif = totalHalaman;
+            if (halamanAktif < 1) halamanAktif = 1;
+
+            const awalIndex = (halamanAktif - 1) * dataPerHalaman;
+            const akhirIndex = awalIndex + dataPerHalaman;
+            const dataPaging = globalDataList.slice(awalIndex, akhirIndex);
+
             updateJumlahTerpilih();
 
-            if (!filteredData || filteredData.length === 0) {
+            // Update Info & Tombol Paging
+            document.getElementById('info_halaman').innerText = totalData > 0 
+                ? `Menampilkan data ${awalIndex + 1} - ${Math.min(akhirIndex, totalData)} dari total ${totalData} pendaftar` 
+                : `Menampilkan 0 dari 0 data`;
+            
+            document.getElementById('teks_halaman').innerText = `Hal ${halamanAktif} dari ${totalHalaman}`;
+            document.getElementById('btnPrev').disabled = halamanAktif === 1;
+            document.getElementById('btnNext').disabled = halamanAktif === totalHalaman || totalData === 0;
+
+            if (!dataPaging || dataPaging.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="13" class="text-center p-6 text-gray-500">Tidak ada data pendaftar ditemukan.</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = '';
-            filteredData.forEach(p => {
+            dataPaging.forEach(p => {
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-gray-50 transition";
                 tr.innerHTML = `
@@ -248,6 +345,11 @@
             });
         }
 
+        function ubahHalaman(arah) {
+            halamanAktif += arah;
+            renderTabelHalaman();
+        }
+
         // Fungsi Dinamis Mengubah Opsi Nilai Berdasarkan Kolom yang Dipilih
         function updateOpsiNilaiMassal() {
             const kolom = document.getElementById('kolom_massal').value;
@@ -301,7 +403,11 @@
             document.getElementById('jumlah_terpilih').innerText = checkedCount;
         }
 
-        async function terapkanAksiMassal() {
+        function tutupModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function konfirmasiAksiMassal() {
             const checkboxes = document.querySelectorAll('.row-checkbox:checked');
             if (checkboxes.length === 0) {
                 alert("Pilih minimal satu pendaftar terlebih dahulu dengan mencentang kotak pada tabel!");
@@ -309,6 +415,8 @@
             }
 
             const kolom = document.getElementById('kolom_massal').value;
+            const selectKolom = document.getElementById('kolom_massal');
+            const namaKolomTeks = selectKolom.options[selectKolom.selectedIndex].text;
             const nilai = document.getElementById('nilai_massal').value;
 
             if (!kolom) {
@@ -320,9 +428,21 @@
                 return;
             }
 
-            const konfirmasi = confirm(`Anda yakin ingin mengubah kolom terpilih menjadi "${nilai}" untuk ${checkboxes.length} pendaftar yang dicentang?`);
-            if (!konfirmasi) return;
+            // Tampilkan Modal Konfirmasi Smooth
+            document.getElementById('pesanKonfirmasi').innerHTML = `
+                Anda akan mengubah kolom <b>[${namaKolomTeks}]</b> menjadi <span class="text-indigo-600 font-bold">[${nilai}]</span> untuk total <span class="bg-indigo-100 text-indigo-800 font-bold px-2 py-0.5 rounded">${checkboxes.length} data pendaftar</span> yang dipilih.<br><br>Apakah Anda yakin ingin mengubah data tersebut?
+            `;
 
+            const btnEksekusi = document.getElementById('btnEksekusiMassal');
+            btnEksekusi.onclick = function() {
+                tutupModal('modalKonfirmasi');
+                terapkanAksiMassal(kolom, nilai, namaKolomTeks, checkboxes);
+            };
+
+            document.getElementById('modalKonfirmasi').classList.add('active');
+        }
+
+        async function terapkanAksiMassal(kolom, nilai, namaKolomTeks, checkboxes) {
             let successCount = 0;
             for (let cb of checkboxes) {
                 const nisn = cb.value;
@@ -339,8 +459,11 @@
                 }
             }
 
-            alert(`Berhasil memperbarui ${successCount} data pendaftar secara massal!`);
-            muatDataVerifikasi();
+            // Tampilkan Modal Sukses Smooth
+            document.getElementById('pesanSukses').innerHTML = `
+                Sejumlah <span class="font-bold text-green-700 text-base">${successCount} data</span> pada kolom <b>[${namaKolomTeks}]</b> telah berhasil diubah menjadi <span class="font-bold text-indigo-700">[${nilai}]</span>.
+            `;
+            document.getElementById('modalSukses').classList.add('active');
             document.getElementById('select_all').checked = false;
         }
 
