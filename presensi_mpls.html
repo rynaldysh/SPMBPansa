@@ -25,6 +25,10 @@
             background-size: 1em;
             padding-right: 2rem !important;
         }
+        select:disabled {
+            opacity: 0.6;
+            cursor: not-allowed !important;
+        }
     </style>
 </head>
 <body class="bg-gray-900 min-h-screen text-gray-100 font-sans p-4 md:p-6">
@@ -63,19 +67,12 @@
             <div class="text-xs text-emerald-400 font-mono" id="info_terpilih">0 siswa dipilih</div>
         </div>
 
-        <!-- FILTER & PENCARIAN -->
+        <!-- PENCARIAN -->
         <div class="bg-gray-800 border border-gray-700 p-4 rounded-xl shadow-md flex flex-wrap justify-between items-center gap-4">
             <div class="flex flex-wrap items-center gap-3 w-full md:w-auto flex-grow">
-                <div class="w-full md:w-72">
+                <div class="w-full md:w-96">
                     <input type="text" id="cari_keyword" onkeyup="muatDataMpls()" oninput="muatDataMpls()" placeholder="Cari nama / no pendaftaran..." class="w-full bg-gray-900 border border-gray-700 text-white px-3 py-2 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none uppercase-input">
                 </div>
-                <select id="filter_jurusan" onchange="muatDataMpls()" class="bg-gray-900 border border-gray-700 text-white px-3 py-2 rounded-lg text-sm outline-none focus:ring-2 focus:ring-emerald-500">
-                    <option value="">Semua Jurusan</option>
-                    <option value="Teknik Mesin (TM)">Teknik Mesin (TM)</option>
-                    <option value="Teknik Kendaraan Ringan (TKR)">Teknik Kendaraan Ringan (TKR)</option>
-                    <option value="Teknik Sepeda Motor (TSM)">Teknik Sepeda Motor (TSM)</option>
-                    <option value="Layanan Kesehatan (Lkes)">Layanan Kesehatan (Lkes)</option>
-                </select>
             </div>
             <div class="text-xs text-gray-400 font-mono" id="info_statistik">Statistik: Memuat...</div>
         </div>
@@ -114,15 +111,13 @@
 
         let cacheDataMpls = [];
 
-        // Fungsi khusus untuk mengambil ulang data terbaru dari server Supabase
         async function refreshDataServer() {
-            cacheDataMpls = []; // Kosongkan cache
+            cacheDataMpls = [];
             document.getElementById('select_all').checked = false;
             await muatDataMpls(true);
         }
 
         async function muatDataMpls(isRefresh = false) {
-            const jurusan = document.getElementById('filter_jurusan').value;
             const tbody = document.getElementById('tabel_mpls');
             
             if (cacheDataMpls.length === 0) {
@@ -132,12 +127,7 @@
                     tbody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-gray-400">Memproses data kehadiran...</td></tr>`;
                 }
                 
-                let query = supabaseClient.from('pendaftar').select('*').order('created_at', { ascending: false });
-                if (jurusan) {
-                    query = query.eq('jurusan', jurusan);
-                }
-
-                const { data, error } = await query;
+                const { data, error } = await supabaseClient.from('pendaftar').select('*').order('created_at', { ascending: false });
 
                 if (error) {
                     tbody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-red-400 font-semibold">Gagal memuat data: ${error.message}</td></tr>`;
@@ -147,16 +137,11 @@
                 cacheDataMpls = data || [];
             }
 
-            let queryData = cacheDataMpls;
-            if (jurusan) {
-                queryData = cacheDataMpls.filter(p => p.jurusan === jurusan);
-            }
-
             const keyword = document.getElementById('cari_keyword').value.trim().toUpperCase();
 
-            let filteredData = queryData;
+            let filteredData = cacheDataMpls;
             if (keyword) {
-                filteredData = queryData.filter(p => {
+                filteredData = cacheDataMpls.filter(p => {
                     const namaSiswa = (p.nama || '').toUpperCase();
                     const noDaftar = (p.no_pendaftaran || '').toUpperCase();
                     return namaSiswa.includes(keyword) || noDaftar.includes(keyword);
@@ -167,13 +152,16 @@
             let totalTidakHadir = 0;
 
             filteredData.forEach(p => {
-                if (p.aksi === 'DITERIMA' && (!p.hadir_mpls || p.hadir_mpls === '')) {
-                    p.hadir_mpls = 'HADIR';
-                    if (p.no_pendaftaran) {
-                        supabaseClient.from('pendaftar').update({ hadir_mpls: 'HADIR' }).eq('no_pendaftaran', p.no_pendaftaran).then();
-                    }
-                } else if (!p.hadir_mpls) {
+                // Jika BELUM DITERIMA, pastikan status kehadiran otomatis TIDAK HADIR
+                if (p.aksi !== 'DITERIMA') {
                     p.hadir_mpls = 'TIDAK HADIR';
+                } else {
+                    if (!p.hadir_mpls || p.hadir_mpls === '') {
+                        p.hadir_mpls = 'HADIR';
+                        if (p.no_pendaftaran) {
+                            supabaseClient.from('pendaftar').update({ hadir_mpls: 'HADIR' }).eq('no_pendaftaran', p.no_pendaftaran).then();
+                        }
+                    }
                 }
 
                 if (p.hadir_mpls === 'HADIR') totalHadir++;
@@ -192,7 +180,8 @@
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-gray-750 transition text-gray-200 text-xs";
                 
-                const statusPenerimaan = p.aksi === 'DITERIMA' 
+                const isDiterima = p.aksi === 'DITERIMA';
+                const statusPenerimaan = isDiterima 
                     ? `<span class="bg-green-900 text-green-200 px-2.5 py-1 rounded font-bold">DITERIMA</span>` 
                     : `<span class="bg-gray-700 text-gray-300 px-2.5 py-1 rounded font-bold">${p.aksi || 'BELUM'}</span>`;
 
@@ -200,22 +189,25 @@
                 const isHadir = p.hadir_mpls === 'HADIR';
                 const selectColorClass = isHadir ? 'bg-green-950 text-green-300 border-green-600 font-bold' : 'bg-red-950 text-red-300 border-red-600 font-bold';
 
+                // Jika tidak diterima, checkbox dinonaktifkan agar tidak bisa dipilih untuk aksi massal hadir
+                const checkboxDisabled = !isDiterima ? 'disabled' : '';
+
                 tr.innerHTML = `
                     <td class="p-3.5 text-center">
-                        <input type="checkbox" value="${identifier}" onclick="updateCounterTerpilih()" class="row-checkbox w-4 h-4 rounded accent-emerald-500 cursor-pointer">
+                        <input type="checkbox" value="${identifier}" onclick="updateCounterTerpilih()" class="row-checkbox w-4 h-4 rounded accent-emerald-500 cursor-pointer" ${checkboxDisabled}>
                     </td>
                     <td class="p-3.5 font-mono font-bold text-indigo-400">${p.no_pendaftaran || '-'}</td>
                     <td class="p-3.5 font-bold text-white">${p.nama || '-'}</td>
                     <td class="p-3.5 text-gray-300">${p.jurusan || '-'}</td>
                     <td class="p-3.5 text-center">${statusPenerimaan}</td>
                     <td class="p-3.5 text-center">
-                        <select id="mpls_${identifier}" onchange="gantiWarnaSelect(this)" class="px-3 py-1.5 rounded text-xs transition ${selectColorClass}">
+                        <select id="mpls_${identifier}" onchange="gantiWarnaSelect(this)" class="px-3 py-1.5 rounded text-xs transition ${selectColorClass}" ${!isDiterima ? 'disabled' : ''}>
                             <option value="HADIR" ${isHadir ? 'selected' : ''} class="bg-gray-900 text-green-400">HADIR</option>
                             <option value="TIDAK HADIR" ${!isHadir ? 'selected' : ''} class="bg-gray-900 text-red-400">TIDAK HADIR</option>
                         </select>
                     </td>
                     <td class="p-3.5 text-center">
-                        <button onclick="simpanPresensi('${identifier}')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded text-xs font-bold shadow transition">
+                        <button onclick="simpanPresensi('${identifier}')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded text-xs font-bold shadow transition ${!isDiterima ? 'opacity-50 cursor-not-allowed' : ''}" ${!isDiterima ? 'disabled' : ''}>
                             Simpan
                         </button>
                     </td>
@@ -226,7 +218,8 @@
         }
 
         function toggleSelectAll(masterCheckbox) {
-            const checkboxes = document.querySelectorAll('.row-checkbox');
+            // Hanya mencentang checkbox siswa yang DITERIMA
+            const checkboxes = document.querySelectorAll('.row-checkbox:not(:disabled)');
             checkboxes.forEach(cb => cb.checked = masterCheckbox.checked);
             updateCounterTerpilih();
         }
@@ -239,8 +232,18 @@
         async function ubahMassal(statusBaru) {
             const checkboxes = document.querySelectorAll('.row-checkbox:checked');
             if (checkboxes.length === 0) {
-                alert("Silakan centang setidaknya satu siswa pada tabel terlebih dahulu!");
+                alert("Silakan centang setidaknya satu siswa yang DITERIMA pada tabel terlebih dahulu!");
                 return;
+            }
+
+            if (statusBaru === 'HADIR') {
+                // Pastikan ganda validasi status DITERIMA
+                const listNoPendaftaran = Array.from(checkboxes).map(cb => cb.value);
+                const invalidCheck = cacheDataMpls.some(p => listNoPendaftaran.includes(p.no_pendaftaran) && p.aksi !== 'DITERIMA');
+                if (invalidCheck) {
+                    alert("Peringatan: Terdapat siswa dengan status belum diterima di antara pilihan Anda!");
+                    return;
+                }
             }
 
             if (!confirm(`Yakin ingin mengubah status ${checkboxes.length} siswa terpilih menjadi ${statusBaru}?`)) {
@@ -286,6 +289,12 @@
                 return;
             }
 
+            const siswaData = cacheDataMpls.find(item => item.no_pendaftaran === noPendaftaran);
+            if (siswaData && siswaData.aksi !== 'DITERIMA') {
+                alert("Siswa dengan status Belum Diterima tidak dapat diubah kehadirannya menjadi Hadir!");
+                return;
+            }
+
             const statusMpls = selectElement.value;
 
             const { error } = await supabaseClient
@@ -299,9 +308,8 @@
                 return;
             }
 
-            const index = cacheDataMpls.findIndex(item => item.no_pendaftaran === noPendaftaran);
-            if (index !== -1) {
-                cacheDataMpls[index].hadir_mpls = statusMpls;
+            if (siswaData) {
+                siswaData.hadir_mpls = statusMpls;
             }
 
             alert("Status kehadiran MPLS berhasil diperbarui!");

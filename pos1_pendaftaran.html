@@ -52,7 +52,12 @@
     <div class="max-w-5xl mx-auto print:hidden space-y-8">
         <header class="bg-blue-700 text-white p-4 rounded-t-lg shadow-md flex justify-between items-center">
             <h1 class="text-xl font-bold">Pos 1: Pendaftaran</h1>
-            <a href="index.html" class="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded text-sm font-semibold transition">Menu Utama</a>
+            <div class="flex items-center gap-2">
+                <button onclick="refreshDataPos1()" class="bg-blue-600 hover:bg-blue-800 px-3.5 py-2 rounded text-sm font-semibold transition shadow flex items-center gap-1.5 border border-blue-500">
+                    🔄 Refresh
+                </button>
+                <a href="index.html" class="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded text-sm font-semibold transition">Menu Utama</a>
+            </div>
         </header>
 
         <!-- FORM PENDAFTARAN -->
@@ -511,6 +516,23 @@
         document.querySelectorAll('.uppercase-input').forEach(input => {
             input.addEventListener('input', function() { this.value = this.value.toUpperCase(); });
         });
+
+        // Fungsi Refresh Pos 1
+        function refreshDataPos1() {
+            document.getElementById('formPendaftaran').reset();
+            document.getElementById('cek_no_daftar').value = '';
+            document.getElementById('filter_no_daftar').value = '';
+            document.getElementById('keterangan_umur').innerHTML = '';
+            document.getElementById('no_pendaftaran').value = '';
+            document.getElementById('display_no_daftar').innerText = 'Otomatis saat disimpan';
+            
+            const input2 = document.getElementById('asal_sekolah_manual');
+            input2.disabled = true;
+            input2.classList.add('bg-gray-100');
+
+            muatDaftarSmp();
+            muatDaftarPendaftar();
+        }
 
         async function muatDaftarSmp() {
             const datalist = document.getElementById('list_smp');
