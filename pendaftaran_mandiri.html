@@ -9,16 +9,15 @@
     <style>
         .uppercase-input { text-transform: uppercase; }
         
-        /* Style Modal Elegan & Smooth */
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px);
             z-index: 1000; justify-content: center; align-items: center;
         }
         .modal-content {
-            background-color: white; padding: 2.5rem; border-radius: 1rem;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); 
-            max-width: 90%; width: 500px; text-align: left;
+            background-color: white; padding: 3rem; border-radius: 1.25rem;
+            box-shadow: 0 25px 35px -5px rgba(0, 0, 0, 0.15), 0 15px 15px -5px rgba(0, 0, 0, 0.08); 
+            max-width: 92%; width: 560px; text-align: left;
             animation: scaleIn 0.25s ease-in-out forwards;
         }
         .modal-overlay.active { display: flex; }
@@ -32,13 +31,11 @@
 <body class="bg-gray-50 min-h-screen text-gray-800 font-sans p-4 md:p-6 flex items-center justify-center">
 
     <div class="max-w-xl w-full bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
-        <!-- HEADER -->
         <div class="bg-blue-700 text-white p-6 text-center">
             <h1 class="text-2xl font-bold">Pendaftaran Mandiri SPMB</h1>
             <p class="text-blue-100 text-sm mt-1">SMK Pancasila 1 Kutoarjo Tahun Ajaran 2027/2028</p>
         </div>
 
-        <!-- FORM PENDAFTARAN DASAR -->
         <form id="formPendaftaranMandiri" class="p-6 md:p-8 space-y-5">
             <div>
                 <label class="block text-sm font-semibold mb-1 text-gray-700">Nama Lengkap <span class="text-red-500">*</span></label>
@@ -53,6 +50,7 @@
                 <div>
                     <label class="block text-sm font-semibold mb-1 text-gray-700">Tanggal Lahir <span class="text-red-500">*</span></label>
                     <input type="date" id="tgl_lahir" class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white" required>
+                    <p id="keterangan_umur" class="text-xs mt-1 text-gray-500 min-h-[16px]"></p>
                 </div>
             </div>
 
@@ -92,25 +90,25 @@
         </form>
     </div>
 
-    <!-- MODAL NOTIFIKASI SUKSES & PERSYARATAN -->
+    <!-- MODAL NOTIFIKASI SUKSES -->
     <div id="modalNotifikasi" class="modal-overlay">
         <div class="modal-content">
-            <div class="text-center mb-4">
-                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-2">
-                    <span class="text-green-600 text-2xl font-bold">✓</span>
+            <div class="text-center mb-5">
+                <div class="mx-auto flex items-center justify-center h-14 w-14 rounded-full bg-green-100 mb-2">
+                    <span class="text-green-600 text-3xl font-bold">✓</span>
                 </div>
-                <h2 class="text-xl font-bold text-gray-900">Pendaftaran Berhasil!</h2>
-                <p class="text-xs text-gray-500 mt-0.5">Silakan simpan nomor pendaftaran Anda.</p>
+                <h2 class="text-2xl font-bold text-gray-900">Pendaftaran Berhasil!</h2>
+                <p class="text-sm text-gray-500 mt-1">Silakan simpan nomor pendaftaran Anda.</p>
             </div>
 
-            <div class="bg-blue-50 p-3.5 rounded-lg border border-blue-100 mb-3 text-sm space-y-1">
-                <div><span class="text-gray-500 text-xs">Nomor Pendaftaran:</span> <br><strong id="notif_no_daftar" class="text-blue-700 text-lg font-mono"></strong></div>
-                <div><span class="text-gray-500 text-xs">Nama Lengkap:</span> <br><strong id="notif_nama" class="text-gray-800"></strong></div>
+            <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 mb-4 text-base space-y-1">
+                <div><span class="text-gray-500 text-xs font-semibold uppercase">Nomor Pendaftaran:</span> <br><strong id="notif_no_daftar" class="text-blue-700 text-xl font-mono tracking-wide"></strong></div>
+                <div><span class="text-gray-500 text-xs font-semibold uppercase">Nama Lengkap:</span> <br><strong id="notif_nama" class="text-gray-800 text-base"></strong></div>
             </div>
 
-            <div class="bg-gray-50 p-3.5 rounded-lg border border-gray-200 mb-3 text-xs text-gray-700 space-y-1.5">
+            <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-4 text-sm text-gray-700 space-y-2">
                 <p class="font-bold text-gray-900">📌 Berkas yang Perlu Dibawa:</p>
-                <ol class="list-decimal list-inside space-y-0.5 pl-1">
+                <ol class="list-decimal list-inside space-y-1 pl-1">
                     <li>Akta Kelahiran (Asli / Fotokopi Legalisir)</li>
                     <li>Kartu Keluarga (KK)</li>
                     <li>PIP / KIP (Jika ada)</li>
@@ -118,12 +116,11 @@
                 </ol>
             </div>
 
-            <!-- Teks Instruksi Kapital yang Ringkas -->
-            <div class="bg-blue-600 text-white p-2.5 rounded-lg text-center font-bold text-xs mb-4 tracking-wider uppercase">
-                SCREENSHOT HALAMAN INI DAN DATANG KE SMK PANCASILA 1 KUTOARJO
+            <div class="bg-blue-600 text-white p-3 rounded-xl text-center font-bold text-xs md:text-sm mb-5 tracking-wider uppercase leading-relaxed">
+                SCREENSHOT HALAMAN INI<br>DAN DATANG KE SMK PANCASILA 1 KUTOARJO
             </div>
 
-            <button type="button" onclick="tutupModalDanReset('modalNotifikasi')" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-semibold py-2.5 rounded-lg transition text-sm shadow">
+            <button type="button" onclick="tutupModalDanReset('modalNotifikasi')" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-semibold py-3 rounded-xl transition text-base shadow">
                 Selesai / Tutup
             </button>
         </div>
@@ -132,26 +129,26 @@
     <!-- MODAL PERINGATAN: SUDAH TERDAFTAR SEBELUMNYA -->
     <div id="modalSudahTerdaftar" class="modal-overlay">
         <div class="modal-content">
-            <div class="text-center mb-4">
-                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-orange-100 mb-2">
-                    <span class="text-orange-600 text-2xl font-bold">!</span>
+            <div class="text-center mb-5">
+                <div class="mx-auto flex items-center justify-center h-14 w-14 rounded-full bg-orange-100 mb-2">
+                    <span class="text-orange-600 text-3xl font-bold">!</span>
                 </div>
-                <h2 class="text-xl font-bold text-gray-900">Anda Sudah Terdaftar!</h2>
-                <p class="text-xs text-gray-500 mt-0.5">Sistem mendeteksi data Anda sudah terdaftar sebelumnya.</p>
+                <h2 class="text-2xl font-bold text-gray-900">Anda Sudah Terdaftar!</h2>
+                <p class="text-sm text-gray-500 mt-1">Sistem mendeteksi data Anda sudah terdaftar sebelumnya.</p>
             </div>
 
-            <div class="bg-orange-50 p-3.5 rounded-lg border border-orange-100 mb-4 text-sm space-y-1">
-                <div><span class="text-gray-500 text-xs">Nomor Pendaftaran Anda:</span> <br><strong id="exist_no_daftar" class="text-orange-700 text-lg font-mono"></strong></div>
-                <div><span class="text-gray-500 text-xs">Nama Lengkap:</span> <br><strong id="exist_nama" class="text-gray-800"></strong></div>
-                <div><span class="text-gray-500 text-xs">Jurusan Pilihan:</span> <br><strong id="exist_jurusan" class="text-gray-800"></strong></div>
+            <div class="bg-orange-50 p-4 rounded-xl border border-orange-100 mb-4 text-base space-y-1">
+                <div><span class="text-gray-500 text-xs font-semibold uppercase">Nomor Pendaftaran Anda:</span> <br><strong id="exist_no_daftar" class="text-orange-700 text-xl font-mono tracking-wide"></strong></div>
+                <div><span class="text-gray-500 text-xs font-semibold uppercase">Nama Lengkap:</span> <br><strong id="exist_nama" class="text-gray-800 text-base"></strong></div>
+                <div><span class="text-gray-500 text-xs font-semibold uppercase">Jurusan Pilihan:</span> <br><strong id="exist_jurusan" class="text-gray-800 text-base"></strong></div>
             </div>
 
-            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-5 text-xs text-gray-700 space-y-2">
-                <p class="font-bold text-gray-900 mb-1">📌 Catatan:</p>
+            <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-5 text-sm text-gray-700 space-y-2">
+                <p class="font-bold text-gray-900">📌 Catatan:</p>
                 <p>Anda tidak perlu melakukan pendaftaran ulang. Silakan bawa berkas persyaratan ke sekolah dengan menunjukkan Nomor Pendaftaran di atas.</p>
             </div>
 
-            <button type="button" onclick="tutupModalDanReset('modalSudahTerdaftar')" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2.5 rounded-lg transition text-sm shadow">
+            <button type="button" onclick="tutupModalDanReset('modalSudahTerdaftar')" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 rounded-xl transition text-base shadow">
                 Mengerti / Tutup
             </button>
         </div>
@@ -165,6 +162,29 @@
         document.querySelectorAll('.uppercase-input').forEach(input => {
             input.addEventListener('input', function() { this.value = this.value.toUpperCase(); });
         });
+
+        // Validasi Batasan Umur 14 - 21 Tahun
+        document.getElementById('tgl_lahir').addEventListener('change', function() { hitungDanValidasiUmur(this.value); });
+        function hitungDanValidasiUmur(tglLahirStr) {
+            const ketUmur = document.getElementById('keterangan_umur');
+            if(!tglLahirStr) { ketUmur.innerHTML = ''; return false; }
+            const birthDate = new Date(tglLahirStr);
+            const today = new Date();
+            let ageY = today.getFullYear() - birthDate.getFullYear();
+            let ageM = today.getMonth() - birthDate.getMonth();
+            let ageD = today.getDate() - birthDate.getDate();
+            if (ageD < 0) { ageM--; ageD += new Date(today.getFullYear(), today.getMonth(), 0).getDate(); }
+            if (ageM < 0) { ageY--; ageM += 12; }
+            const teksUsia = `Usia saat ini: ${ageY} Tahun, ${ageM} Bulan, ${ageD} Hari.`;
+            if (ageY < 14 || ageY > 21) {
+                ketUmur.innerHTML = `<span class="text-red-600 font-bold">${teksUsia} (Ditolak: Usia harus 14 - 21 Tahun)</span>`;
+                document.getElementById('tgl_lahir').value = ''; 
+                return false;
+            } else {
+                ketUmur.innerHTML = `<span class="text-green-600 font-bold">${teksUsia} (Memenuhi syarat)</span>`;
+                return true;
+            }
+        }
 
         async function generateNomorPendaftaranBaru() {
             const { data } = await supabaseClient.from('pendaftar')
@@ -251,6 +271,7 @@
             document.getElementById(modalId).classList.remove('active');
             if (modalId === 'modalNotifikasi') {
                 document.getElementById('formPendaftaranMandiri').reset();
+                document.getElementById('keterangan_umur').innerHTML = '';
             }
         }
     </script>

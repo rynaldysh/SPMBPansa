@@ -53,8 +53,8 @@
         <header class="bg-blue-700 text-white p-4 rounded-t-lg shadow-md flex justify-between items-center">
             <h1 class="text-xl font-bold">Pos 1: Pendaftaran</h1>
             <div class="flex items-center gap-2">
-                <button onclick="refreshDataPos1()" class="bg-blue-600 hover:bg-blue-800 px-3.5 py-2 rounded text-sm font-semibold transition shadow flex items-center gap-1.5 border border-blue-500">
-                    🔄 Refresh
+                <button id="btnRefresh" onclick="refreshDataPos1()" class="bg-blue-600 hover:bg-blue-800 px-3.5 py-2 rounded text-sm font-semibold transition shadow flex items-center gap-1.5 border border-blue-500">
+                    <span id="iconRefresh">🔄</span> Refresh
                 </button>
                 <a href="index.html" class="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded text-sm font-semibold transition">Menu Utama</a>
             </div>
@@ -294,9 +294,9 @@
     <!-- Modal Peringatan Duplikat Nama -->
     <div id="duplicateModalOverlay" class="modal-overlay">
         <div class="modal-content">
-            <h2 class="text-2xl font-bold text-gray-900 mb-4">Peringatan: Nama Sudah Terdaftar</h2>
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">Peringatan: Nama & Tanggal Lahir Sama</h2>
             <p class="text-base text-gray-600 mb-8">
-                Data ganda tidak diizinkan! Anda <strong>wajib mengedit data yang sudah ada</strong> atas nama: <br>
+                Data dengan nama dan tanggal lahir yang sama sudah terdaftar! Anda <strong>wajib mengedit data yang sudah ada</strong> atas nama: <br>
                 <span id="duplicateModalName" class="text-lg font-bold text-blue-700 bg-blue-50 px-3 py-1 rounded inline-block mt-2"></span>
             </p>
             <button type="button" id="btnEditDuplicate" class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition w-full">Ya, Buka dan Edit Data</button>
@@ -327,7 +327,7 @@
         </div>
     </div>
 
-    <!-- AREA CETAK 2 HALAMAN A4 (TERKUNCI PRESISI 1 HALAMAN) -->
+    <!-- AREA CETAK 2 HALAMAN A4 -->
     <div id="printArea" class="hidden">
         <div class="page-sheet">
             <div style="text-align: center; margin-bottom: 5px;">
@@ -517,8 +517,14 @@
             input.addEventListener('input', function() { this.value = this.value.toUpperCase(); });
         });
 
-        // Fungsi Refresh Pos 1
-        function refreshDataPos1() {
+        // Fungsi Refresh Pos 1 dengan Animasi Putar & Loading Data
+        async function refreshDataPos1() {
+            const icon = document.getElementById('iconRefresh');
+            const btn = document.getElementById('btnRefresh');
+
+            icon.classList.add('animate-spin');
+            btn.disabled = true;
+
             document.getElementById('formPendaftaran').reset();
             document.getElementById('cek_no_daftar').value = '';
             document.getElementById('filter_no_daftar').value = '';
@@ -530,8 +536,13 @@
             input2.disabled = true;
             input2.classList.add('bg-gray-100');
 
-            muatDaftarSmp();
-            muatDaftarPendaftar();
+            await muatDaftarSmp();
+            await muatDaftarPendaftar();
+
+            setTimeout(() => {
+                icon.classList.remove('animate-spin');
+                btn.disabled = false;
+            }, 600);
         }
 
         async function muatDaftarSmp() {
@@ -572,7 +583,11 @@
             }
         });
 
-        document.getElementById('tgl_lahir').addEventListener('change', function() { hitungDanValidasiUmur(this.value); });
+        document.getElementById('tgl_lahir').addEventListener('change', function() { 
+            hitungDanValidasiUmur(this.value); 
+            checkDuplicateName();
+        });
+
         function hitungDanValidasiUmur(tglLahirStr) {
             const ketUmur = document.getElementById('keterangan_umur');
             if(!tglLahirStr) { ketUmur.innerHTML = ''; return false; }
@@ -594,14 +609,25 @@
             }
         }
         
+        // Pengecekan Duplikat Nama Berdasarkan Nama DAN Tanggal Lahir yang Sama Persis
         async function checkDuplicateName() {
             const namaInput = document.getElementById('nama').value.trim().toUpperCase();
-            if (!namaInput || namaInput.length < 3) return;
+            const tglLahirInput = document.getElementById('tgl_lahir').value;
+
+            if (!namaInput || namaInput.length < 3 || !tglLahirInput) return;
+            
             foundDuplicateData = null;
-            const { data } = await supabaseClient.from('pendaftar').select('*').eq('nama', namaInput).limit(1).maybeSingle();
+            const { data } = await supabaseClient
+                .from('pendaftar')
+                .select('*')
+                .eq('nama', namaInput)
+                .eq('tgl_lahir', tglLahirInput)
+                .limit(1)
+                .maybeSingle();
+
             if (data) {
                 foundDuplicateData = data;
-                document.getElementById('duplicateModalName').innerText = foundDuplicateData.nama;
+                document.getElementById('duplicateModalName').innerText = `${foundDuplicateData.nama} (Lahir: ${foundDuplicateData.tgl_lahir})`;
                 document.getElementById('duplicateModalOverlay').classList.add('active');
             }
         }
@@ -901,7 +927,6 @@
                 alert("Gagal menyimpan ke database Supabase: " + error.message); console.error(error); return; 
             }
 
-            // Tampilkan Modal Sukses (Ganti Alert standar)
             document.getElementById('successModalName').innerText = payload.nama;
             document.getElementById('successModalNo').innerText = noDaftar;
             
@@ -912,7 +937,6 @@
 
             document.getElementById('successPrintModalOverlay').classList.add('active');
 
-            // Reset Form
             document.getElementById('formPendaftaran').reset();
             const input2 = document.getElementById('asal_sekolah_manual');
             input2.disabled = true;
